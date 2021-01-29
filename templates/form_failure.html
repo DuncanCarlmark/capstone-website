@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Error</h1>
+<p>All fields must be filled out</p>
+
+<form action="/form" method="POST">
+    <div class="mb-3">
+      <input type="text" class="form-control" id="input_age" aria-describedby="emailHelp"
+      placeholder="Parent Age Ex: 53" name="age">
+    </div>
+    <div class="mb-3">
+      <input type="text" class="form-control" id="input_genre"
+      placeholder="Enjoyed Genre Ex: Rock">
+    </div>
+    <div class="mb-3">
+        <input type="text" class="form-control" id="input_artist"
+        placeholder="Enjoyed Artist Ex: The Eagles">
+    </div>
+   
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

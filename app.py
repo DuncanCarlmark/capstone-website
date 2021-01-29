@@ -4,7 +4,7 @@ import spotipy
 
 app = Flask('__name__')
 
-code = None
+code = []
 
 @app.route('/')
 def index():
@@ -30,7 +30,7 @@ def index():
 @app.route('/form')
 def form():
 
-    code = request.args.get('code')
+    code.append(request.args.get('code'))
 
 
     return render_template('form.html')
@@ -49,6 +49,21 @@ def form_success():
                                 artist = artist)
 
     return render_template('form_success.html')
+
+@app.route('/gen_playlist')
+def gen_playlist():
+    auth_code = code[0].split('?code=')[1].split("&")[0]
+    token_info = sp_oauth.get_access_token(auth_code)
+    access_token = token_info['access_token']
+    sp = spotipy.Spotify(auth=access_token)
+
+    sp.user_playlist_create(user=sp.current_user()['id'],
+                            name='stonk me daddy',
+                            public = True,
+                            collaborative = False,
+                            description = 'This is a test')
+    return render_template('gen_playlist_success')
+
 
 
 if __name__ == '__main__':

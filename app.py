@@ -35,8 +35,18 @@ def form():
 
     return render_template('form.html')
 
-@app.route('/form_success')
+@app.route('/form_success', methods=['POST'])
 def form_success():
+    age = request.form.get('age')
+    genre = request.form.get('genre')
+    artist = request.form.get('artist')
+
+    if not age or not genre or not artist:
+        error_message = 'Hey! We said to fill out all the forms.'
+        return render_template('form_failure.html',
+                                age = age,
+                                genre = genre,
+                                artist = artist)
 
     return render_template('form_success.html')
 

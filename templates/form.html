@@ -6,18 +6,18 @@
 <p>In order for us to make accurate recommendations, we need to know a little information first!</p>
 <p>Please fill out the forms below with one entry only for each form.</p>
 <p>This basic information will allow our algorithm to make somewhat personalize recommendations for your playlist.</p>
-<form action="/form" method="POST">
+<form action="/form_success" method="POST">
     <div class="mb-3">
       <input type="text" class="form-control" id="input_age" aria-describedby="emailHelp"
-      placeholder="Parent Age Ex: 53" name="age">
+      placeholder="Parent Age Ex: 53" name="age" value="{{age}}">
     </div>
     <div class="mb-3">
       <input type="text" class="form-control" id="input_genre"
-      placeholder="Enjoyed Genre Ex: Rock">
+      placeholder="Enjoyed Genre Ex: Rock" name="genre" value="{{genre}}">
     </div>
     <div class="mb-3">
         <input type="text" class="form-control" id="input_artist"
-        placeholder="Enjoyed Artist Ex: The Eagles">
+        placeholder="Enjoyed Artist Ex: The Eagles" name="artist" value="{{artist}}">
     </div>
    
     <button type="submit" class="btn btn-primary">Submit</button>

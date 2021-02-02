@@ -2,6 +2,9 @@
 from flask import Flask, request, render_template, url_for
 import spotipy
 
+# Custom Classes
+from scripts.billboard import *
+
 app = Flask('__name__')
 
 global_vars = {}
@@ -14,7 +17,10 @@ def index():
     client_secret = '14116a664bd84048a0c7c3004edc9726'
 
     # Temporary placeholder until we actually get a website going
-    redirect_uri = 'http://52.11.255.57/form'
+    redirect_uri = 'http://127.0.0.1:8080/form'
+    
+    # # Actual Redirect
+    # redirect_uri = 'http://52.11.255.57/form'
 
     # The permissions that our application will ask for
     scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
@@ -67,15 +73,29 @@ def gen_playlist():
     token_info = sp_oauth.get_access_token(global_vars['access_code'])
     access_token = token_info['access_token']
 
-
+    # Create Spotify Object and get userID
     sp = spotipy.Spotify(auth=access_token)
     user = sp.current_user()['id']
 
+    # Create a blank playlist
     sp.user_playlist_create(user=user,
-                            name='stonk me daddy',
+                            name='Testing Playlist',
                             public = True,
                             collaborative = False,
                             description = 'This is a test')
+
+    # Create billboad recommender object, generate recommendations, add to playlist
+    billboard_recommender = billboard()
+    parent_to_user = billboard_recommender.getList(genre=['electronica','pop'],
+                                                startY = 2019, 
+                                                endY = 2019)
+    sp.user_playlist_add_tracks(user=username, 
+                                    playlist_id=playlist, 
+                                    tracks=billboard_rec, 
+                                    position=None)
+
+
+
     return render_template('gen_playlist_success.html')
 
 

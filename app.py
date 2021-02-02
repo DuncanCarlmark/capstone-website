@@ -16,11 +16,11 @@ def index():
     client_id = 'e6be6a0e60124f36ad99038de2f36e91'
     client_secret = '14116a664bd84048a0c7c3004edc9726'
 
-    # Temporary placeholder until we actually get a website going
-    redirect_uri = 'http://127.0.0.1:8080/form'
+    # # Temporary placeholder until we actually get a website going
+    # redirect_uri = 'http://127.0.0.1:8080/form'
     
-    # # Actual Redirect
-    # redirect_uri = 'http://52.11.255.57/form'
+    # Actual Redirect
+    redirect_uri = 'http://52.11.255.57/form'
 
     # The permissions that our application will ask for
     scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])

@@ -77,22 +77,29 @@ def gen_playlist():
     sp = spotipy.Spotify(auth=access_token)
     user = sp.current_user()['id']
 
+    print("Creating user playlist")
     # Create a blank playlist
     sp.user_playlist_create(user=user,
                             name='Testing Playlist',
                             public = True,
                             collaborative = False,
                             description = 'This is a test')
+    print("SUCCESS: Playlist created")
 
+    print("Generating song recommendations")
     # Create billboad recommender object, generate recommendations, add to playlist
     billboard_recommender = billboard()
     parent_to_user = billboard_recommender.getList(genre=['electronica','pop'],
                                                 startY = 2019, 
                                                 endY = 2019)
+    print("SUCCESS: Recommendations Generated")
+    
+    print("Populating playlist with reccomendation")
     sp.user_playlist_add_tracks(user=username, 
                                     playlist_id=playlist, 
                                     tracks=billboard_rec, 
                                     position=None)
+    print("SUCCESS: Playlist populated")
 
 
 

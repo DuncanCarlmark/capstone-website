@@ -9,21 +9,24 @@ app = Flask('__name__')
 
 global_vars = {}
 
-@app.route('/')
-def index():
+testing = True
 
-    # Client Information
-    client_id = 'e6be6a0e60124f36ad99038de2f36e91'
-    client_secret = '14116a664bd84048a0c7c3004edc9726'
+# Client Information
+client_id = 'e6be6a0e60124f36ad99038de2f36e91'
+client_secret = '14116a664bd84048a0c7c3004edc9726'
 
-    # # Temporary placeholder until we actually get a website going
-    # redirect_uri = 'http://127.0.0.1:8080/form'
-    
-    # Actual Redirect
+# # Temporary placeholder until we actually get a website going
+redirect_uri = 'http://127.0.0.1:8080/form'
+
+# Actual Redirect
+if testing == False:
     redirect_uri = 'http://54.200.135.162/form'
 
-    # The permissions that our application will ask for
-    scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
+# The permissions that our application will ask for
+scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
+
+@app.route('/')
+def index():
 
     # Oauth object    
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
@@ -60,12 +63,6 @@ def form_success():
 @app.route('/gen_playlist')
 def gen_playlist():
 
-    # Auth info
-    client_id = 'e6be6a0e60124f36ad99038de2f36e91'
-    client_secret = '14116a664bd84048a0c7c3004edc9726'
-    redirect_uri = 'http://54.200.135.162/form'
-    scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
-    
     # Re make auth object
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
     
@@ -79,7 +76,7 @@ def gen_playlist():
 
     print("Creating user playlist")
     # Create a blank playlist
-    sp.user_playlist_create(user=user,
+    playlist = sp.user_playlist_create(user=user,
                             name='Testing Playlist',
                             public = True,
                             collaborative = False,
@@ -95,9 +92,9 @@ def gen_playlist():
     print("SUCCESS: Recommendations Generated")
     
     print("Populating playlist with reccomendation")
-    sp.user_playlist_add_tracks(user=username, 
+    sp.user_playlist_add_tracks(user=user, 
                                     playlist_id=playlist, 
-                                    tracks=billboard_rec, 
+                                    tracks=parent_to_user, 
                                     position=None)
     print("SUCCESS: Playlist populated")
 

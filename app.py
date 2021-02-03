@@ -86,16 +86,24 @@ def gen_playlist():
     print("Generating song recommendations")
     # Create billboad recommender object, generate recommendations, add to playlist
     billboard_recommender = billboard()
-    parent_to_user = billboard_recommender.getList(genre=['electronica','pop'],
+    parent_to_user = billboard_recommender.getList(length = 10,
+                                                genre=['electronica','pop'],
                                                 startY = 2019, 
                                                 endY = 2019)
+
+    print('-------------------------------- TESTING RECOMMENDATION LIST ----------------------------------')
+    print(parent_to_user)
+    print(len(parent_to_user))
+    print('-------------------------------- TESTING BLANK PLAYLIST ----------------------------------')
+    print(playlist)
+
+
     print("SUCCESS: Recommendations Generated")
     
     print("Populating playlist with reccomendation")
-    sp.user_playlist_add_tracks(user=user, 
-                                    playlist_id=playlist, 
-                                    tracks=parent_to_user, 
-                                    position=None)
+    sp.playlist_add_items(playlist_id=playlist['id'], 
+                            items=parent_to_user, 
+                            position=None)
     print("SUCCESS: Playlist populated")
 
 

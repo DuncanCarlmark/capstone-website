@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+    <link rel="stylesheet" type="text/css" href="static/css/main.css"/>
     <h1>All Capstone No Cap</h1>
-    <p> Hello and welcome to the DSC180b capstone project created by Sarat Sreepathy,
-        Nayoung Park, and Duncan Carlmark
+    <p> Hello, and welcome to the DSC180B capstone project created by Sarat Sreepathy,
+        Nayoung Park, and Duncan Carlmark.
     </p>
 
     <br>
@@ -12,5 +14,5 @@
     <p>
         This project is a Spotify recommender that creates playlists both parents and their children can listen to.
     </p>
-    <p> <a href = "{{ auth_url }}"> Click here to get started </a></p>
+    <button> <a href = "{{ auth_url }}"> Click here to get started </a></button>
 {% endblock %}

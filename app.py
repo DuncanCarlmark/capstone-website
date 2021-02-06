@@ -27,6 +27,12 @@ scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-p
 
 @app.route('/')
 def index():
+    '''
+    Creates the landing page for the site and also generates the Spotify authorization URL
+
+    Returns:
+        The flask template for the landing page of our site
+    '''
 
     # Oauth object    
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
@@ -38,15 +44,31 @@ def index():
 
 @app.route('/form')
 def form():
+    '''
+    ALSO serves as callback page from Spotify auth
+    Generates the form page in which users input their age, genre, and artist information. Also
+    retrieves the access_code from the Spotify authentication callback.
+
+    Returns:
+        The flask template for the form page
+        Also sets the global_variable access code
+    '''
 
     global_vars['access_code'] = request.args.get('code')
     
-   
-
     return render_template('form.html', access_code = global_vars['access_code'])
 
 @app.route('/form_success', methods=['POST'])
 def form_success():
+    '''
+    Generates the success page for when the user completes their form. Also pulls the
+    information from the form (age, genre, artist) and store them in global variables to
+    be referenced later by recommendation logic.
+
+    Returns:
+        The Flask template for the form success page
+    '''
+
     age = request.form.get('age')
     genre = request.form.get('genre')
     artist = request.form.get('artist')
@@ -62,6 +84,15 @@ def form_success():
 
 @app.route('/gen_playlist')
 def gen_playlist():
+    '''
+    Generates the success page for when a playlist is created and also handles the logic for
+    when a playlist is created. This method completes both the task1 and task2 recommendations
+    and then finally outputs them as a playlist on the user's account. 
+
+    Returns:
+        The flask template for the playlist success page. Technically also returns a playlist of
+        song recommendations, but this playlist is generated directly on the user's Spotify account.
+    '''
 
     # Re make auth object
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)

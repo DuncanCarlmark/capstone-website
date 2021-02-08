@@ -1,6 +1,7 @@
 # Web and Server
 from flask import Flask, request, render_template, url_for
 import spotipy
+import os
 
 # Custom Classes
 from scripts.billboard import *
@@ -36,6 +37,9 @@ def index():
 
     # Oauth object    
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
+
+    # Remove any cached tokens
+    os.remove('.cache-*')
 
     # Force auth every time
     auth_url = sp_oauth.get_authorize_url()
@@ -94,8 +98,14 @@ def gen_playlist():
         song recommendations, but this playlist is generated directly on the user's Spotify account.
     '''
 
+    # Remove any cached tokens
+    os.remove('.cache-*')
+
     # Re make auth object
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
+    
+    # Remove any cached tokens
+    os.remove('.cache-*')
     
     # Get the actual access token
     token_info = sp_oauth.get_access_token(global_vars['access_code'])

@@ -1,30 +1,45 @@
 # Web and Server
 from flask import Flask, request, render_template, url_for
+import datetime
 import spotipy
 import os
 
 # Custom Classes
 from scripts.billboard import *
 
-app = Flask('__name__')
+# ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-global_vars = {}
-
-testing = False
+testing = True
 
 # Client Information
 client_id = 'e6be6a0e60124f36ad99038de2f36e91'
 client_secret = '14116a664bd84048a0c7c3004edc9726'
+scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
+redirect_uri = None
 
-# # Temporary placeholder until we actually get a website going
-redirect_uri = 'http://127.0.0.1:8080/form'
+# Algorithm Information
+AGE_LOWER_BOUND = 15
+AGE_UPPER_BOUND = 25
+TASK1_LENGTH = 20
+
 
 # Actual Redirect
-if testing == False:
+if testing:
+    redirect_uri = 'http://127.0.0.1:8080/form'
+else:
     redirect_uri = 'http://54.200.135.162/form'
 
-# The permissions that our application will ask for
-scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
+# User input
+global_vars = {'access_code': None,
+            'PARENT_AGE' : None,
+            'PARENT_GENRE' : None,
+            'PARENT_ARTIST' : None
+            }
+
+
+# ------------------------------------------- CREATE APPLICATION ---------------------------------------------------
+
+app = Flask('__name__')
 
 @app.route('/')
 def index():
@@ -37,9 +52,6 @@ def index():
 
     # Oauth object    
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
-
-    # Remove any cached tokens
-    os.remove('.cache-*')
 
     # Force auth every time
     auth_url = sp_oauth.get_authorize_url()
@@ -77,12 +89,18 @@ def form_success():
     genre = request.form.get('genre')
     artist = request.form.get('artist')
 
+    # Redirect to form if all fields are not present
     if not age or not genre or not artist:
         error_message = 'Hey! We said to fill out all the forms.'
         return render_template('form_failure.html',
                                 age = age,
                                 genre = genre,
                                 artist = artist)
+
+    # Set global variables based on correct input
+    global_vars['PARENT_AGE'] = int(age)
+    global_vars['PARENT_GENRE'] = genre
+    global_vars['PARENT_ARTIST'] = artist
 
     return render_template('form_success.html')
 
@@ -98,48 +116,47 @@ def gen_playlist():
         song recommendations, but this playlist is generated directly on the user's Spotify account.
     '''
 
-    # Remove any cached tokens
-    os.remove('.cache-*')
-
     # Re make auth object
     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
-    
-    # Remove any cached tokens
-    os.remove('.cache-*')
-    
     # Get the actual access token
     token_info = sp_oauth.get_access_token(global_vars['access_code'])
     access_token = token_info['access_token']
-
     # Create Spotify Object and get userID
     sp = spotipy.Spotify(auth=access_token)
-    user = sp.current_user()['id']
+    
+    # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
 
-    print("Creating user playlist")
+
+    user = sp.current_user()['id']
+    print("Creating empty playlist for: " + str(user))
+
+
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
-                            name='Testing Playlist',
+                            name='IS DIS WORKING',
                             public = True,
                             collaborative = False,
                             description = 'This is a test')
     print("SUCCESS: Playlist created")
 
+
     print("Generating song recommendations")
+    current_year = datetime.datetime.today().year
+    start_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_LOWER_BOUND)
+    end_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_UPPER_BOUND)
+
     # Create billboad recommender object, generate recommendations, add to playlist
     billboard_recommender = billboard()
-    parent_to_user = billboard_recommender.getList(length = 10,
-                                                genre=['electronica','pop'],
-                                                startY = 2019, 
-                                                endY = 2019)
-
-    print('-------------------------------- TESTING RECOMMENDATION LIST ----------------------------------')
-    print(parent_to_user)
-    print(len(parent_to_user))
-    print('-------------------------------- TESTING BLANK PLAYLIST ----------------------------------')
-    print(playlist)
-
-
+    parent_to_user = billboard_recommender.getList(length = TASK1_LENGTH,
+                                                genre=['rock'],
+                                                startY = start_year, 
+                                                endY = end_year)
     print("SUCCESS: Recommendations Generated")
+    print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
+    print("Playlist Length: " + str(len(parent_to_user)))
+
     
     print("Populating playlist with reccomendation")
     sp.playlist_add_items(playlist_id=playlist['id'], 

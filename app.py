@@ -6,6 +6,7 @@ import os
 
 # Custom Classes
 from scripts.billboard import *
+from scripts.cf_recommender import *
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
@@ -185,33 +186,39 @@ def gen_playlist():
                                 names=['user_id', 'artist_id', 'artist_name', 'plays'])
 
     print("CLEANING USER DATA")
-    # Minor data cleaning
+    # Cleaning user data and filtering out all non US users
     cleaned_users = lastfm_profile[['user_id', 'age', 'country']].dropna().reset_index(drop=True)
     cleaned_users_us = cleaned_users[cleaned_users['country'] == 'United States']
-    
     cleaned_users = cleaned_users_us[cleaned_users_us['age'] > 0]
+    # Choose users based on the user's specified age
+    chosen_users = extract_users(cleaned_users, global_vars['PARENT_AGE'], 5)
+
 
     print("CLEANING HISTORY DATA")
-    # Choose users
-    chosen_users = extract_users(cleaned_users, 55, 5)
     cleaned_history = lastfm_usersong[['user_id', 'artist_id', 'artist_name', 'plays']].dropna().reset_index(drop=True)
+    # Filters down the cleaned history dataframe to only include users with propper profile values
     cleaned_history = extract_histories(cleaned_history, cleaned_users)
+    # Filters down the dataframe again to only include users that were chosen based on age
     chosen_history = extract_histories(cleaned_history, chosen_users)
-
     ap = chosen_history
 
+    # Create a DataFrame of artist statistics
+    # For each artist finds: totalUniqueUsers, totalArtistPlays, avgUserPlays
     artist_rank = ap.groupby(['artist_name']) \
     .agg({'user_id' : 'count', 'plays' : 'sum'}) \
     .rename(columns={"user_id" : 'totalUniqueUsers', "plays" : "totalArtistPlays"}) \
     .sort_values(['totalArtistPlays'], ascending=False)
     artist_rank['avgUserPlays'] = artist_rank['totalArtistPlays'] / artist_rank['totalUniqueUsers']
 
+    # Joins new artist information with user-artist listening history
     ap = ap.join(artist_rank, on="artist_name", how="inner") \
     .sort_values(['plays'], ascending=False)
 
+    # Min max scales play count
     pc = ap.plays
     play_count_scaled = (pc - pc.min()) / (pc.max() - pc.min())
     ap = ap.assign(playCountScaled=play_count_scaled)
+
 
     ap = ap.drop_duplicates()
     grouped_df = ap.groupby(['user_id', 'artist_id', 'artist_name']).sum().reset_index()

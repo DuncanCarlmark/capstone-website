@@ -136,8 +136,8 @@ def gen_playlist():
     #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
     print("GENERATING PLAYLIST 1")
     # Create a blank playlist
-    playlist = sp.user_playlist_create(user=user,
-                            name='IS DIS WORKING',
+    playlist_t1 = sp.user_playlist_create(user=user,
+                            name='Task1: Playlist',
                             public = True,
                             collaborative = False,
                             description = 'This is a test')
@@ -169,21 +169,24 @@ def gen_playlist():
     #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
     print("GENERATING PLAYLIST 2")
     # Create a blank playlist
-    playlist = sp.user_playlist_create(user=user,
-                            name='IS DIS WORKING',
+    playlist_t2 = sp.user_playlist_create(user=user,
+                            name='Task2: Playlist',
                             public = True,
                             collaborative = False,
                             description = 'This is a test')
-    print("SUCCESS: Playlist created")
+    print("SUCCESS: Blank playlist created")
 
-    print("Loading Last.fm")
-    lastfm_profile = pd.read_csv(os.path.join(DATA_DIR_RAW, 'usersha1-profile.tsv'),
-                                sep='\t', 
-                                names=['user_id', 'gender', 'age', 'country', 'registered'])
-
-    lastfm_usersong = pd.read_csv(os.path.join(DATA_DIR_RAW,'usersha1-artmbid-artname-plays.tsv'), 
-                                sep='\t', 
-                                names=['user_id', 'artist_id', 'artist_name', 'plays'])
+    print("Loading Last.fm dataset")
+    lastfm_profile = pd.read_csv(
+        'user_profile.tsv',
+        sep='\t', 
+        names=['user_id', 'gender', 'age', 'country', 'registered']
+    )
+    lastfm_usersong = pd.read_csv(
+        'user_artist.tsv', 
+        sep='\t', 
+        names=['user_id', 'artist_id', 'artist_name', 'plays']
+    )
 
     print("CLEANING USER DATA")
     # Cleaning user data and filtering out all non US users
@@ -193,7 +196,6 @@ def gen_playlist():
     # Choose users based on the user's specified age
     chosen_users = extract_users(cleaned_users, global_vars['PARENT_AGE'], 5)
 
-
     print("CLEANING HISTORY DATA")
     cleaned_history = lastfm_usersong[['user_id', 'artist_id', 'artist_name', 'plays']].dropna().reset_index(drop=True)
     # Filters down the cleaned history dataframe to only include users with propper profile values
@@ -202,6 +204,8 @@ def gen_playlist():
     chosen_history = extract_histories(cleaned_history, chosen_users)
     ap = chosen_history
 
+
+    print("CREATING NEW ARTIST FEATURES")
     # Create a DataFrame of artist statistics
     # For each artist finds: totalUniqueUsers, totalArtistPlays, avgUserPlays
     artist_rank = ap.groupby(['artist_name']) \
@@ -210,19 +214,28 @@ def gen_playlist():
     .sort_values(['totalArtistPlays'], ascending=False)
     artist_rank['avgUserPlays'] = artist_rank['totalArtistPlays'] / artist_rank['totalUniqueUsers']
 
+
+    print("COMBINING NEW FEATURES WITH EXISTING DATA")
     # Joins new artist information with user-artist listening history
     ap = ap.join(artist_rank, on="artist_name", how="inner") \
     .sort_values(['plays'], ascending=False)
 
+
+    print("MIN MAX SCALING ARTIST 'play' DATA")
     # Min max scales play count
     pc = ap.plays
     play_count_scaled = (pc - pc.min()) / (pc.max() - pc.min())
     ap = ap.assign(playCountScaled=play_count_scaled)
 
 
+    print("ENSURING ALL DATASET ENTRIES ARE UNIQUE")
+    # Drop duplicates just in case?
     ap = ap.drop_duplicates()
+    # Everything is already a unique pairing, but in case groupby the identifying information
     grouped_df = ap.groupby(['user_id', 'artist_id', 'artist_name']).sum().reset_index()
 
+
+    # Convert columns to category codes for implicit
     grouped_df['artist_name'] = grouped_df['artist_name'].astype("category")
     grouped_df['user_id'] = grouped_df['user_id'].astype("category")
     grouped_df['artist_id'] = grouped_df['artist_id'].astype("category")
@@ -231,10 +244,9 @@ def gen_playlist():
 
     print("GETTING USER PLAYLISTS")
     r = sp.current_user_playlists()
-
     playlist_ids = parse_playlist_ids(r)
 
-
+    print("EXTRACTING ARTISTS FROM USER PLAYLISTS")
     # Pull all the tracks from a playlist
     tracks = []
     albums = []
@@ -244,37 +256,45 @@ def gen_playlist():
     for pid in playlist_ids:
         # Request all track information
         r = sp.playlist_items(pid)
-        
         tracks, albums, artists = parse_track_info(r)
         break
-
+    
+    # Condense into a series of normalized artist counts
     playlist_artists = pd.Series(artists)
     playlist_grouped = playlist_artists.value_counts(normalize=True)
 
+    # Essentially create a fake user-ID for our listening history
     no_artist = playlist_grouped.shape[0]
     curr_user = grouped_df.iloc[-1]['user_id'] + 1
     curr_user_id = [curr_user] * no_artist
 
+    # Creates a df of all artists in a users listening history, their normalized playcounts, 
+    # and the user_id of the last user in the last.fm dataset?
     playlist_df = pd.DataFrame(playlist_grouped, columns=['playCountScaled']) 
     playlist_df.reset_index(level=0, inplace=True)
     playlist_df.columns = ['artist_name', 'playCountScaled']
     playlist_df['user_id'] = pd.Series(curr_user_id)
-
-
+    
+    # Reorganize df columns so that user_id comes first
     cols = playlist_df.columns.tolist()
     cols = cols[-1:] + cols[:-1]
     playlist_df = playlist_df[cols]
-    playlist_df.head()
+    # Clean artist_name strings
+    playlist_df['artist_name'] = playlist_df['artist_name'].str.lower() 
 
-    playlist_df['artist_name'] = playlist_df['artist_name'].str.lower()
-
+    # Create a dictionary that maps artist_names from last.fm with their artist_ids
     artist_pairing = dict(zip(grouped_df.artist_name, grouped_df.artist_id))
+
+    # In the playlist df give artists their corresponding last.fm ID
+    # Also drop any artists (NA values) that are not in the last.fm dataset
     playlist_df['artist_id'] = playlist_df['artist_name'].map(artist_pairing)
     playlist_df = playlist_df.dropna().reset_index(drop=True)
     playlist_df['artist_id'] = playlist_df['artist_id'].astype(int)
 
+    # Append new user's listening history to the dataframe of last.fm user histories
     updated_df = grouped_df.append(playlist_df)
 
+    # Create new user_ids and artist_ids to ensure consistiency before creating CF matricies
     updated_df['artist_name'] = updated_df['artist_name'].astype("category")
     updated_df['user_id'] = updated_df['user_id'].astype("category")
     updated_df['artist_id'] = updated_df['artist_id'].astype("category")
@@ -282,35 +302,38 @@ def gen_playlist():
     updated_df['artist_id'] = updated_df['artist_id'].cat.codes
 
     print("CREATING ARTIST-USER AND USER-ARTIST MATRICIES")
+    # Take user-artist pairings and their associated normalized playcounts and properly scale them
     sparse_artist_user = sparse.csr_matrix((updated_df['playCountScaled'].astype(float), (updated_df['artist_id'], updated_df['user_id'])))
     sparse_user_artist = sparse.csr_matrix((updated_df['playCountScaled'].astype(float), (updated_df['user_id'], updated_df['artist_id'])))
     model = implicit.als.AlternatingLeastSquares(factors=20, regularization=0.1, iterations=50)
-    
 
     alpha = 15
     data = (sparse_artist_user * alpha).astype('double')
-
     print("FITTING ALS MODELS")
     model.fit(data)
 
     user_vecs = model.user_factors
     artist_vecs = model.item_factors
-
-
     # Create recommendations for current user
     user_id = curr_user
-
     print("GENERATING RECOMMMENDATIONS LIST")
     recommendations = recommend(user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
-
     updated_df.loc[updated_df['user_id'] == curr_user].sort_values(by=['playCountScaled'], ascending=False)[['artist_name', 'user_id', 'playCountScaled']].head(10)
-
     artist_list = recommendations['artist_name'].to_list()
+    user_to_parent = pd.DataFrame(get_top_recommended_tracks(artist_list, sp), columns=['track_name'])
 
 
-    recommended_tracks = pd.DataFrame(get_top_recommended_tracks(artist_list, sp), columns=['track_name'])
+    print("Populating playlist with reccomendation")
+    sp.playlist_add_items(playlist_id=playlist['id'], 
+                            items=user_to_parent, 
+                            position=None)
+    print("SUCCESS: Playlist populated")
 
-    recommended_tracks.to_csv(os.path.join(DATA_DIR_RECOMMENDATIONS, 'song_recs_t2.csv'))
+
+
+
+        
+    
 
 
     return render_template('gen_playlist_success.html')

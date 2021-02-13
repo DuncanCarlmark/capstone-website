@@ -1,3 +1,5 @@
 *.csv
 
+# Directories
 env
+data

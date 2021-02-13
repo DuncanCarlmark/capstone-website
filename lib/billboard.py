@@ -1,11 +1,25 @@
 import pandas as pd
 import numpy as np
 import datetime
+import os
+import requests
+
+# Directory Paths
+DATA_DIR = 'data'
+DATA_DIR_RAW = os.path.join(DATA_DIR, 'raw')
+DATA_DIR_CLEAN = os.path.join(DATA_DIR, 'clean')
+DATA_DIR_RECOMMENDATIONS = os.path.join(DATA_DIR, 'recommendations')
+
+USER_PROFILE = os.path.join(DATA_DIR_RAW, 'user_profile.csv')
+USER_ARTIST = os.path.join(DATA_DIR_RAW, 'user_artist.csv')
+
+BILLBOARD_SONGS = os.path.join(DATA_DIR_RAW, 'billboard_songs.csv')
+BILLBOARD_FEATURES = os.path.join(DATA_DIR_RAW, 'billboard_features.csv')
 
 class billboard:
     def __init__(self):
         #features = pd.read_csv('Hot 100 Audio Features.csv')
-        f = pd.read_csv('audio_features.csv', encoding = "utf-8")
+        f = pd.read_csv(BILLBOARD_FEATURES)
         # only include tracks that have a spotify id on file for now
         #f = f[~f['spotify_track_id'].isnull()][f.columns[0:5]].drop_duplicates()
         f = f.dropna(subset=['spotify_track_id', 'spotify_genre'])[f.columns[0:5]].drop_duplicates()
@@ -13,7 +27,7 @@ class billboard:
         self.features = f
 
         #stuff = pd.read_csv('Hot Stuff.csv')
-        stuff = pd.read_csv('https://query.data.world/s/go22golrhaeqllglpuxnnd7irb3l2j')
+        stuff = pd.read_csv(BILLBOARD_SONGS)
         stuff['WeekID'] = pd.to_datetime(stuff['WeekID'])
         self.stuff = stuff
 

@@ -3,10 +3,24 @@ from flask import Flask, request, render_template, url_for
 import datetime
 import spotipy
 import os
+import requests
 
 # Custom Classes
-from scripts.billboard import *
-from scripts.cf_recommender import *
+from lib.billboard import *
+from lib.cf_recommender import *
+
+
+# Directory Paths
+DATA_DIR = 'data'
+DATA_DIR_RAW = os.path.join(DATA_DIR, 'raw')
+DATA_DIR_CLEAN = os.path.join(DATA_DIR, 'clean')
+DATA_DIR_RECOMMENDATIONS = os.path.join(DATA_DIR, 'recommendations')
+
+USER_PROFILE = os.path.join(DATA_DIR_RAW, 'user_profile.csv')
+USER_ARTIST = os.path.join(DATA_DIR_RAW, 'user_artist.csv')
+
+BILLBOARD_SONGS = os.path.join(DATA_DIR_RAW, 'billboard_songs.csv')
+BILLBOARD_FEATURES = os.path.join(DATA_DIR_RAW, 'billboard_features.csv')
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
@@ -31,11 +45,12 @@ else:
     redirect_uri = 'http://54.200.135.162/form'
 
 # User input
-global_vars = {'access_code': None,
-            'PARENT_AGE' : None,
-            'PARENT_GENRE' : None,
-            'PARENT_ARTIST' : None
-            }
+global_vars = {
+    'access_code': None,
+    'PARENT_AGE' : None,
+    'PARENT_GENRE' : None,
+    'PARENT_ARTIST' : None
+}
 
 
 # ------------------------------------------- CREATE APPLICATION ---------------------------------------------------
@@ -161,7 +176,7 @@ def gen_playlist():
 
     
     print("Populating playlist with reccomendation")
-    sp.playlist_add_items(playlist_id=playlist['id'], 
+    sp.playlist_add_items(playlist_id=playlist_t1['id'], 
                             items=parent_to_user, 
                             position=None)
     print("SUCCESS: Playlist populated")
@@ -177,16 +192,9 @@ def gen_playlist():
     print("SUCCESS: Blank playlist created")
 
     print("Loading Last.fm dataset")
-    lastfm_profile = pd.read_csv(
-        'user_profile.tsv',
-        sep='\t', 
-        names=['user_id', 'gender', 'age', 'country', 'registered']
-    )
-    lastfm_usersong = pd.read_csv(
-        'user_artist.tsv', 
-        sep='\t', 
-        names=['user_id', 'artist_id', 'artist_name', 'plays']
-    )
+    lastfm_profile = pd.read_csv(USER_PROFILE)
+    lastfm_usersong = pd.read_csv(USER_ARTIST)
+        
 
     print("CLEANING USER DATA")
     # Cleaning user data and filtering out all non US users
@@ -324,17 +332,10 @@ def gen_playlist():
 
 
     print("Populating playlist with reccomendation")
-    sp.playlist_add_items(playlist_id=playlist['id'], 
+    sp.playlist_add_items(playlist_id=playlist_t2['id'], 
                             items=user_to_parent, 
                             position=None)
     print("SUCCESS: Playlist populated")
-
-
-
-
-        
-    
-
 
     return render_template('gen_playlist_success.html')
 

@@ -19,12 +19,10 @@ from ipywidgets import FloatProgress
 def extract_users(df, age, age_range):
     '''
     Extracts users from last.fm given a specific age and a +- age bound
-
     PARAMS:
         - df: The df that will be filtered
         - age: The center of the specified age range
         - age_range: The number of years (above or below) the center of the specified age range
-
     RETURNS:
         - Filtered dataframe that has ages only within the specified age range
     '''
@@ -34,6 +32,14 @@ def extract_users(df, age, age_range):
     return users_selected
 
 def extract_histories(df, users):
+    '''
+    Takes a dataframe and filters it down to a specific set of users
+    PARAMS:
+        - df: Dataframe being filtered
+        - users: Users being selected from the dataframe
+    RETURNS:
+        - Filtered dataframe only containing specific users
+    '''
     extracted_history = df[df['user_id'].isin(users['user_id'])]
     return extracted_history
 

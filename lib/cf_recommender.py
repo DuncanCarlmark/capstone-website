@@ -153,9 +153,11 @@ def recommend(user_id, sparse_user_artist, user_vecs, artist_vecs, grouped_df, n
 
 def get_top_recommended_tracks(artist_list, sp):
     top_list = []
+    top_list_ids = []
     for artist in artist_list:
         uri = sp.search(artist)['tracks']['items'][0]['album']['artists'][0]['uri']
         top_tracks = sp.artist_top_tracks(uri)
         for track in top_tracks['tracks'][:5]:
             top_list.append(track['name'])
-    return top_list
+            top_list_ids.append(track['id'])
+    return top_list, top_list_ids

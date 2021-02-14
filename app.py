@@ -265,7 +265,7 @@ def gen_playlist():
         # Request all track information
         r = sp.playlist_items(pid)
         tracks, albums, artists = parse_track_info(r)
-        break
+        
     
     # Condense into a series of normalized artist counts
     playlist_artists = pd.Series(artists)
@@ -328,12 +328,13 @@ def gen_playlist():
     recommendations = recommend(user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
     updated_df.loc[updated_df['user_id'] == curr_user].sort_values(by=['playCountScaled'], ascending=False)[['artist_name', 'user_id', 'playCountScaled']].head(10)
     artist_list = recommendations['artist_name'].to_list()
-    user_to_parent = pd.DataFrame(get_top_recommended_tracks(artist_list, sp), columns=['track_name'])
 
+    # Take the given list of top artists recommendations and get each artist's top songs
+    top_song_names, top_song_ids = get_top_recommended_tracks(artist_list, sp)
 
     print("Populating playlist with reccomendation")
     sp.playlist_add_items(playlist_id=playlist_t2['id'], 
-                            items=user_to_parent, 
+                            items=top_song_ids, 
                             position=None)
     print("SUCCESS: Playlist populated")
 

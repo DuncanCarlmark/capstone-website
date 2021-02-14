@@ -24,7 +24,7 @@ BILLBOARD_FEATURES = os.path.join(DATA_DIR_RAW, 'billboard_features.csv')
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-testing = True
+testing = False
 
 # Client Information
 client_id = 'e6be6a0e60124f36ad99038de2f36e91'

@@ -42,7 +42,7 @@ TASK1_LENGTH = 20
 if testing:
     redirect_uri = 'http://127.0.0.1:8080/form'
 else:
-    redirect_uri = 'http://35.161.20.39/form '
+    redirect_uri = 'http://35.161.20.39/form'
 
 # User input
 global_vars = {

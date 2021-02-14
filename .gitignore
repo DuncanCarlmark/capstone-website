@@ -3,3 +3,9 @@
 # Directories
 env
 data
+
+
+# Notebook stuff
+
+*.ipynb
+.ipynb_checkpoints

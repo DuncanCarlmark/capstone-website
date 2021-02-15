@@ -7,6 +7,7 @@ import requests
 
 # Custom Classes
 from lib.billboard import *
+from lib.task1_cf import *
 from lib.cf_recommender import *
 
 
@@ -34,7 +35,7 @@ redirect_uri = None
 
 # Algorithm Information
 AGE_LOWER_BOUND = 15
-AGE_UPPER_BOUND = 25
+AGE_UPPER_BOUND = 30
 TASK1_LENGTH = 20
 
 
@@ -147,8 +148,52 @@ def gen_playlist():
 
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
+    
+    
 
+    #------------------------------------------------ GENERATING DEFAULT (TASK 1) PLAYLIST --------------------------------------
+    
+    print("GENERATING SAMPLE PLAYLIST")
+    # Create a blank playlist
+    playlist_s = sp.user_playlist_create(user=user,
+                                         name='Task 1: Sample',
+                                         public = True,
+                                         collaborative = False,
+                                         description = 'This is a test')
+    print("SUCCESS: Playlist created")
+    
+
+    print("Generating song recommendations")
+    current_year = datetime.datetime.today().year
+    start_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_LOWER_BOUND)
+    end_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_UPPER_BOUND)
+
+    # Create billboard recommender object, generate recommendations, add to playlist
+    billboard_recommender = billboard()
+    
+    # sample playlist for parent_to_user
+    sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
+                                                   age=global_vars['PARENT_AGE'],
+                                                   genre=global_vars['PARENT_GENRE'],
+                                                   artist=global_vars['PARENT_ARTIST'])
+    print("SUCCESS: Recommendations Generated")
+    print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
+    print("Playlist Length: " + str(len(sample_parent)) + " songs")
+    
+    
+    print("Populating playlist with recommendations")
+    sp.playlist_add_items(playlist_id=playlist_s['id'],
+                          items=sample_parent,
+                          position=None)
+    print("SUCCESS: Playlist populated")
+    
+    
+    del billboard_recommender
+    del initial_parent
+    
+    
     #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
+    
     print("GENERATING PLAYLIST 1")
     # Create a blank playlist
     playlist_t1 = sp.user_playlist_create(user=user,
@@ -157,30 +202,46 @@ def gen_playlist():
                             collaborative = False,
                             description = 'This is a test')
     print("SUCCESS: Playlist created")
-
-
-    print("Generating song recommendations")
-    current_year = datetime.datetime.today().year
-    start_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_LOWER_BOUND)
-    end_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_UPPER_BOUND)
-
-    # Create billboad recommender object, generate recommendations, add to playlist
-    billboard_recommender = billboard()
-    parent_to_user = billboard_recommender.getList(length = TASK1_LENGTH,
-                                                genre=['rock'],
-                                                startY = start_year, 
-                                                endY = end_year)
-    print("SUCCESS: Recommendations Generated")
-    print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
-    print("Playlist Length: " + str(len(parent_to_user)))
-
     
-    print("Populating playlist with reccomendation")
+    
+    print("LOCATING SAMPLE PLAYLIST")
+    playlists = sp.current_user_playlists()['items']
+    sample_id = ''
+    for playlist in playlists:
+        if playlist['name'] == 'Task 1: Sample':
+            sample_id = playlist['id']
+            print("FOUND SAMPLE PLAYLIST")
+    
+    print("Generating song recommendations")
+    seed_artists = []
+    seed_tracks = []
+    #seed_genres = set()
+    
+    for i in sp.playlist_tracks(playlist_id=sample_id)['items']:
+        track = i['track']
+        seed_artists += [track['artists'][0]['id']]
+        seed_tracks.append(track['id'])
+        #seed_genres.add(track['genre'])
+    
+    bb = billboard()
+    task1 = task1_cf(length= TASK1_LENGTH, 
+                     features= bb.features
+                     test_rec= bb.getList(length=length*2)
+                     seed_tracks)
+    parent_to_user = task1.getList()
+    
+    
+    print("SUCCESS: Recommendations Generated")
+    print("Playlist Length: " + str(len(parent_to_user)) + " songs")
+    
+    print("Populating playlist with recommendations")
     sp.playlist_add_items(playlist_id=playlist_t1['id'], 
                             items=parent_to_user, 
                             position=None)
     print("SUCCESS: Playlist populated")
-    del billboard_recommender
+    
+    del bb
+    del task1
     del parent_to_user
 
     #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
@@ -326,7 +387,7 @@ def gen_playlist():
     artist_vecs = model.item_factors
     # Create recommendations for current user
     user_id = curr_user
-    print("GENERATING RECOMMMENDATIONS LIST")
+    print("GENERATING RECOMMENDATIONS LIST")
     recommendations = recommend(user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
     updated_df.loc[updated_df['user_id'] == curr_user].sort_values(by=['playCountScaled'], ascending=False)[['artist_name', 'user_id', 'playCountScaled']].head(10)
     artist_list = recommendations['artist_name'].to_list()
@@ -334,7 +395,7 @@ def gen_playlist():
     # Take the given list of top artists recommendations and get each artist's top songs
     top_song_names, top_song_ids = get_top_recommended_tracks(artist_list, sp)
 
-    print("Populating playlist with reccomendation")
+    print("Populating playlist with recommendation")
     sp.playlist_add_items(playlist_id=playlist_t2['id'], 
                             items=top_song_ids, 
                             position=None)

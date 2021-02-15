@@ -5,8 +5,8 @@
 env
 data
 .idea
+*__pycache__
 
 # Notebook stuff
-
 *.ipynb
 .ipynb_checkpoints

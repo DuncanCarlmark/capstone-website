@@ -1,9 +1,10 @@
+*.DS_Store
 *.csv
 
 # Directories
 env
 data
-
+.idea
 
 # Notebook stuff
 

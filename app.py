@@ -205,7 +205,7 @@ def gen_playlist():
     
     print("LOCATING SAMPLE PLAYLIST")
     playlists = sp.current_user_playlists()['items']
-    sample_found = False
+    sample_found = False # make user input for this
     seed_tracks = []
     #seed_artists = []
     #seed_genres = set()
@@ -225,14 +225,17 @@ def gen_playlist():
     if sample_found == False:
         print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
         seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
+        
     
     print("Generating song recommendations")
     bb = billboard()
+    # bbList needs to get songs in the same timeframe
+    bbList = bb.getList(length=TASK1_LENGTH*2) #, age=global_vars[USER_AGE]); add input for user age
+    
     task1 = task1_cf(length= TASK1_LENGTH, 
-                     features= bb.features
-                     test_rec= bb.getList(length=length*2)
+                     features= bb.features,
                      seed_tracks)
-    parent_to_user = task1.getList()
+    parent_to_user = task1.getList(test_rec=bbList)
     
     
     print("SUCCESS: Recommendations Generated")

@@ -191,7 +191,6 @@ def gen_playlist():
     del billboard_recommender
     del initial_parent
     
-    
     #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
     
     print("GENERATING PLAYLIST 1")
@@ -202,27 +201,32 @@ def gen_playlist():
                             collaborative = False,
                             description = 'This is a test')
     print("SUCCESS: Playlist created")
-    
+   
     
     print("LOCATING SAMPLE PLAYLIST")
     playlists = sp.current_user_playlists()['items']
-    sample_id = ''
-    for playlist in playlists:
-        if playlist['name'] == 'Task 1: Sample':
-            sample_id = playlist['id']
-            print("FOUND SAMPLE PLAYLIST")
-    
-    print("Generating song recommendations")
-    seed_artists = []
+    sample_found = False
     seed_tracks = []
+    #seed_artists = []
     #seed_genres = set()
     
-    for i in sp.playlist_tracks(playlist_id=sample_id)['items']:
-        track = i['track']
-        seed_artists += [track['artists'][0]['id']]
-        seed_tracks.append(track['id'])
-        #seed_genres.add(track['genre'])
+    for playlist in playlists:
+        if playlist['name'] == 'Task 1: Sample':
+            sample_found = True
+            print("FOUND SAMPLE PLAYLIST")
+            # pull songs in sample playlist 
+            for i in sp.playlist_tracks(playlist_id=playlist['id'])['items']:
+                track = i['track']
+                seed_tracks.append(track['id'])
+                #seed_artists += [track['artists'][0]['id']]
+                #seed_genres.add(track['genre'])
+            break;
     
+    if sample_found == False:
+        print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
+        seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
+    
+    print("Generating song recommendations")
     bb = billboard()
     task1 = task1_cf(length= TASK1_LENGTH, 
                      features= bb.features

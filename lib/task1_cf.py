@@ -15,14 +15,14 @@ class task1_cf:
     def train_svm(self):
         
         # liked songs
-        seed = f.loc[f['spotify_track_id'].isin(seed_tracks)]
+        seed = self.f.loc[self.f['spotify_track_id'].isin(self.seed_tracks)]
         # negative training set; fix to get songs in the same timeframe
-        random = f.loc[~f['spotify_track_id'].isin(seed_tracks) & ~f[f.columns[10:-1]].isnull()].sample(len(seed))
+        random = self.f.loc[~self.f['spotify_track_id'].isin(self.seed_tracks) & ~self.f[self.f.columns[10:-1]].isnull()].sample(len(seed))
         
         # train svm
         clf = svm.SVC()
         X = np.concatenate((seed[seed.columns[10:-1]].values, random[random.columns[10:-1]].values))
-        y = [1 for i in range(length)] + [0 for i in range(length)]
+        y = [1 for i in range(self.length)] + [0 for i in range(self.length)]
         clf.fit(X, y)
         return clf
 
@@ -31,7 +31,7 @@ class task1_cf:
         clf_ = self.train_svm()
         
         # test set; test_rec gets songs in the same timeframe
-        test = f.loc[f['spotify_track_id'].isin(test_rec)]
+        test = self.f.loc[self.f['spotify_track_id'].isin(test_rec)]
         
         new_tracks = []
         for index, row in test.iterrows():
@@ -40,5 +40,5 @@ class task1_cf:
                 if clf_.predict([test_features]) == 1:
                     new_tracks.append(row['spotify_track_id'])
         
-        return new_tracks[:length]
+        return new_tracks[:self.length]
     

@@ -208,58 +208,62 @@ def gen_playlist():
     #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
     
 
-    print("GENERATING PLAYLIST 1")
-    # Create a blank playlist
-    playlist_t1 = sp.user_playlist_create(user=user,
-                            name='Task1: Playlist',
-                            public = True,
-                            collaborative = False,
-                            description = 'This is a test')
-    print("SUCCESS: Playlist created")
+    # print("GENERATING PLAYLIST 1")
+    # # Create a blank playlist
+    # playlist_t1 = sp.user_playlist_create(user=user,
+    #                         name='Task1: Playlist',
+    #                         public = True,
+    #                         collaborative = False,
+    #                         description = 'This is a test')
+    # print("SUCCESS: Playlist created")
    
     
-    print("LOCATING SAMPLE PLAYLIST")
-    playlists = sp.current_user_playlists()['items']
-    sample_found = False # make user input for this
-    seed_tracks = []
-    #seed_artists = []
-    #seed_genres = set()
+    # print("LOCATING SAMPLE PLAYLIST")
+    # playlists = sp.current_user_playlists()['items']
+    # sample_found = False # make user input for this
+    # seed_tracks = []
+    # #seed_artists = []
+    # #seed_genres = set()
     
-    for playlist in playlists:
-        if playlist['name'] == 'Task 1: Sample':
-            sample_found = True
-            print("FOUND SAMPLE PLAYLIST")
-            # pull songs in sample playlist 
-            for i in sp.playlist_tracks(playlist_id=playlist['id'])['items']:
-                track = i['track']
-                seed_tracks.append(track['id'])
-                #seed_artists += [track['artists'][0]['id']]
-                #seed_genres.add(track['genre'])
-            break
+    # for playlist in playlists:
+    #     if playlist['name'] == 'Task 1: Sample':
+    #         sample_found = True
+    #         print("FOUND SAMPLE PLAYLIST")
+    #         # pull songs in sample playlist 
+    #         for i in sp.playlist_tracks(playlist_id=playlist['id'])['items']:
+    #             track = i['track']
+    #             seed_tracks.append(track['id'])
+    #             #seed_artists += [track['artists'][0]['id']]
+    #             #seed_genres.add(track['genre'])
+    #         break
     
-    if sample_found == False:
-        print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
-        seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
+    # if sample_found == False:
+    #     print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
+    #     seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
         
     
-    print("Generating song recommendations")
-    billboard_reccomender = billboard(billboard_songs, billboard_features)
-    # bbList needs to get songs in the same timeframe
-    bbList = billboard_reccomender.getList(length=TASK1_LENGTH*2) #, age=global_vars[USER_AGE]); add input for user age
+    # print("Generating song recommendations")
+    # billboard_reccomender = billboard(billboard_songs, billboard_features)
+    # # bbList needs to get songs in the same timeframe
+    # bbList = billboard_reccomender.getList(length=TASK1_LENGTH*2) #, age=global_vars[USER_AGE]); add input for user age
     
-    task1 = task1_cf(seed_tracks, length= TASK1_LENGTH, features= billboard_reccomender.billboard_features)
+    # task1 = task1_cf(
+    #     length= TASK1_LENGTH, 
+    #     features= billboard_reccomender.billboard_features,
+    #     seed_tracks = seed_tracks
+    # )
 
-    parent_to_user = task1.getList(test_rec=bbList)
+    # parent_to_user = task1.getList(test_rec=bbList)
     
     
-    print("SUCCESS: Recommendations Generated")
-    print("Playlist Length: " + str(len(parent_to_user)) + " songs")
+    # print("SUCCESS: Recommendations Generated")
+    # print("Playlist Length: " + str(len(parent_to_user)) + " songs")
     
-    print("Populating playlist with recommendations")
-    sp.playlist_add_items(playlist_id=playlist_t1['id'], 
-                            items=parent_to_user, 
-                            position=None)
-    print("SUCCESS: Playlist populated")
+    # print("Populating playlist with recommendations")
+    # sp.playlist_add_items(playlist_id=playlist_t1['id'], 
+    #                         items=parent_to_user, 
+    #                         position=None)
+    # print("SUCCESS: Playlist populated")
 
     #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
     print("GENERATING PLAYLIST 2")
@@ -277,7 +281,7 @@ def gen_playlist():
     
     age_range = 5
     # Extracting users and user history based on parent age
-    chosen_users = extract_users(user_profile_df, PARENT_AGE, age_range)
+    chosen_users = extract_users(user_profile_df, global_vars['PARENT_AGE'], age_range)
     chosen_history = extract_histories(user_artist_df, chosen_users)
 
     # Create additional artist/user statistics for generating recommendations

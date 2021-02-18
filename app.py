@@ -246,10 +246,6 @@ def gen_playlist():
                             items=parent_to_user, 
                             position=None)
     print("SUCCESS: Playlist populated")
-    
-    del bb
-    del task1
-    del parent_to_user
 
     #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
     print("GENERATING PLAYLIST 2")

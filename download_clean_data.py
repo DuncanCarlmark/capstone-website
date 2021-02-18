@@ -27,15 +27,18 @@ BILLBOARD_FEATURES_PATH_CLEAN = os.path.join(DATA_DIR_CLEAN, 'billboard_features
 
 
 # Make data directory and subfolders for billboard and last.fm
-print("------------------------- DOWNLOADING RAW TRAINING DATA -------------------------")
+print("------------------------- DOWNLOADING CLEAN TRAINING DATA -------------------------")
 
-# Make necessary directories if they do not already exist
+ # Make necessary directories if they do not already exist
 print("CREATING DATA DIRECTORIES")
-os.mkdir(DATA_DIR)
-os.mkdir(DATA_DIR_RAW)
-os.mkdir(DATA_DIR_CLEAN)
-os.mkdir(DATA_DIR_RECOMMENDATIONS)
-print('Data directory files created')
+if os.path.isdir(DATA_DIR):
+    print("Data directory already exists. Skipping creation.")
+else:
+    os.mkdir(DATA_DIR)
+    os.mkdir(DATA_DIR_RAW)
+    os.mkdir(DATA_DIR_CLEAN)
+    os.mkdir(DATA_DIR_RECOMMENDATIONS)
+    print('Data directories created')
 
 # LAST.FM files
 r = requests.get('https://capstone-clean-data.s3-us-west-2.amazonaws.com/user_profile.csv')

@@ -85,6 +85,23 @@ def index():
 
     return render_template('index.html', auth_url = auth_url)
 
+@app.route('/about')
+def about():
+    '''
+    Creates a page containing information about our project and it's motivations
+    '''
+
+    return render_template('about.html')
+
+
+@app.route('/algorithms')
+def algorithms():
+    '''
+    Creates a page containing information about the algorithms used in our project
+    '''
+
+    return render_template('algorithms.html')
+
 @app.route('/form')
 def form():
     '''
@@ -189,10 +206,10 @@ def gen_playlist():
     
     # sample playlist for parent_to_user
     sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
-                                                   startY = start_year,
-                                                   endY = end_year,
-                                                   genre=global_vars['PARENT_GENRE'],
-                                                   )
+                                                age = global_vars['PARENT_AGE'],
+                                                genre=global_vars['PARENT_GENRE'],
+                                                artist=global_vars['PARENT_ARTIST']
+                                                )
     print("SUCCESS: Recommendations Generated")
     print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
     print("Playlist Length: " + str(len(sample_parent)) + " songs")

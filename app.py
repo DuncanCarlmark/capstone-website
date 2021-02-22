@@ -42,11 +42,16 @@ testing = True
 client_id = 'e6be6a0e60124f36ad99038de2f36e91'
 client_secret = '14116a664bd84048a0c7c3004edc9726'
 scope = " ".join(['playlist-modify-public',"user-top-read","user-read-recently-played","playlist-read-private"])
-redirect_uri = None
+
+redirect_uri_1_1 = None
+redirect_uri_1_2 = None 
+redirect_uri_2_0 = None
 
 # Actual Redirect
 if testing:
-    redirect_uri = 'http://127.0.0.1:8080/form'
+    redirect_uri_1_1 = 'http://localhost:8080/form_1_1'
+    redirect_uri_1_2 = 'http://localhost:8080/form_1_2'
+    redirect_uri_2_0 = 'http://localhost:8080/form_2_0'
 else:
     redirect_uri = 'http://35.166.214.194/form'
 
@@ -57,16 +62,43 @@ TASK1_LENGTH = 20
 
 # User input
 global_vars = {
-    'access_code': None,
+    'USER_ACCESS_CODE': None,
+    'PARENT_ACCESS_CODE': None,
+    'USER_AGE': None,
     'PARENT_AGE' : None,
     'PARENT_GENRE' : None,
     'PARENT_ARTIST' : None
+}
+
+task_1_1_responses = {
+    'USER_ACCESS_CODE': None,
+    'PARENT_AGE': None,
+    'PARENT_GENRE': None,
+    'PARENT_ARTIST': None
+}
+
+task_1_2_responses = {
+    'USER_ACCESS_CODE': None,
+    'PARENT_ACCESS_CODE': None,
+    'USER_AGE': None,
+    'PARENT_AGE': None,
+    'PARENT_GENRE': None,
+    'PARENT_ARTIST': None
+}
+
+task_2_0_responses = {
+    'USER_ACCESS_CODE': None,
+    'PARENT_AGE': None,
+    'PARENT_GENRE': None,
+    'PARENT_ARTIST': None
 }
 
 
 # ------------------------------------------- CREATE APPLICATION ---------------------------------------------------
 
 app = Flask('__name__')
+
+# ------------------------------------------- HOME PAGES ---------------------------------------------------
 
 @app.route('/')
 def index():
@@ -78,12 +110,21 @@ def index():
     '''
 
     # Oauth object    
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
+    sp_oauth_1_1 = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_1, scope=scope)
+    sp_oauth_1_2 = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_2, scope=scope)
+    sp_oauth_2_0 = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_2_0, scope=scope)
 
     # Force auth every time
-    auth_url = sp_oauth.get_authorize_url()
+    auth_url_1_1 = sp_oauth_1_1.get_authorize_url()
+    auth_url_1_2 = sp_oauth_1_2.get_authorize_url()
+    auth_url_2_0 = sp_oauth_2_0.get_authorize_url()
 
-    return render_template('index.html', auth_url = auth_url)
+    return render_template(
+        'home/index.html', 
+        auth_url_1_1 = auth_url_1_1,
+        auth_url_1_2 = auth_url_1_2,
+        auth_url_2_0 = auth_url_2_0
+    )
 
 @app.route('/about')
 def about():
@@ -91,7 +132,7 @@ def about():
     Creates a page containing information about our project and it's motivations
     '''
 
-    return render_template('about.html')
+    return render_template('home/about.html')
 
 
 @app.route('/algorithms')
@@ -100,26 +141,22 @@ def algorithms():
     Creates a page containing information about the algorithms used in our project
     '''
 
-    return render_template('algorithms.html')
+    return render_template('home/algorithms.html')
 
-@app.route('/form')
-def form():
-    '''
-    ALSO serves as callback page from Spotify auth
-    Generates the form page in which users input their age, genre, and artist information. Also
-    retrieves the access_code from the Spotify authentication callback.
 
-    Returns:
-        The flask template for the form page
-        Also sets the global_variable access code
-    '''
+# ------------------------------------------- FORM PAGES TASK 1.1 ---------------------------------------------------
 
-    global_vars['access_code'] = request.args.get('code')
+
+@app.route('/form_1_1')
+def form_1_1():
     
-    return render_template('form.html', access_code = global_vars['access_code'])
 
-@app.route('/form_success', methods=['POST'])
-def form_success():
+    task_1_1_responses['USER_ACCESS_CODE'] = request.args.get('code')
+    
+    return render_template('task1.1/form.html', access_code = task_1_1_responses['USER_ACCESS_CODE'])
+
+@app.route('/form_success_1_1', methods=['POST'])
+def form_success_1_1():
     '''
     Generates the success page for when the user completes their form. Also pulls the
     information from the form (age, genre, artist) and store them in global variables to
@@ -136,17 +173,82 @@ def form_success():
     # Redirect to form if all fields are not present
     if not age or not genre or not artist:
         error_message = 'Hey! We said to fill out all the forms.'
-        return render_template('form_failure.html',
+        return render_template('task1.1/form_failure.html',
                                 age = age,
                                 genre = genre,
                                 artist = artist)
 
     # Set global variables based on correct input
-    global_vars['PARENT_AGE'] = int(age)
-    global_vars['PARENT_GENRE'] = genre
-    global_vars['PARENT_ARTIST'] = artist
+    task_1_1_responses['PARENT_AGE'] = int(age)
+    task_1_1_responses['PARENT_GENRE'] = genre
+    task_1_1_responses['PARENT_ARTIST'] = artist
 
-    return render_template('form_success.html')
+    return render_template('task1.1/form_success.html')
+
+@app.route('/gen_playlist_1_1')
+def gen_playlist_1_1():
+
+    # Re make auth object
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_1, scope=scope)
+
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(task_1_1_responses['USER_ACCESS_CODE'])
+    access_token = token_info['access_token']
+
+    # Create Spotify Object and get userID
+    sp = spotipy.Spotify(auth=access_token)
+    
+    # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
+
+
+    user = sp.current_user()['id']
+    print("Creating empty playlists for: " + str(user))
+
+    print("GENERATING SAMPLE PLAYLIST")
+    # Create a blank playlist
+    playlist_s = sp.user_playlist_create(user=user,
+                                         name='Task 1: Sample',
+                                         public = True,
+                                         collaborative = False,
+                                         description = 'This is a test')
+    print("SUCCESS: Playlist created")
+    
+
+    print("Generating song recommendations")
+    # Load in billboard data
+    billboard_songs = pd.read_csv(BILLBOARD_SONGS_PATH_CLEAN)
+    billboard_features = pd.read_csv(BILLBOARD_FEATURES_PATH_CLEAN)
+
+    # Create billboard recommender object, generate recommendations, add to playlist
+    billboard_recommender = billboard(billboard_songs, billboard_features)
+    
+    # sample playlist for parent_to_user
+    sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
+                                                age = task_1_1_responses['PARENT_AGE'],
+                                                genre = task_1_1_responses['PARENT_GENRE'],
+                                                artist = task_1_1_responses['PARENT_ARTIST']
+                                                )
+    print("SUCCESS: Recommendations Generated")
+    
+    
+    
+    print("Populating playlist with recommendations")
+    sp.playlist_add_items(playlist_id=playlist_s['id'],
+                          items=sample_parent,
+                          position=None)
+    print("SUCCESS: Playlist populated")
+
+    return render_template('task1.1/gen_playlist_success.html') 
+
+    # ------------------------------------------- FORM PAGES TASK 1.2 ---------------------------------------------------
+
+
+
+    # ------------------------------------------- FORM PAGES TASK 2.0 ---------------------------------------------------
+
+
 
 @app.route('/gen_playlist')
 def gen_playlist():
@@ -175,6 +277,8 @@ def gen_playlist():
 
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
+
+    
     
     
 

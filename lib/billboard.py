@@ -17,16 +17,10 @@ BILLBOARD_SONGS = os.path.join(DATA_DIR_RAW, 'billboard_songs.csv')
 BILLBOARD_FEATURES = os.path.join(DATA_DIR_RAW, 'billboard_features.csv')
 
 class billboard:
-    def __init__(self):
-        #features = pd.read_csv('Hot 100 Audio Features.csv')
-        f = pd.read_csv(BILLBOARD_FEATURES)
-        # only include tracks that have a spotify id on file for now
-        f = f.dropna(subset=['spotify_track_id', 'spotify_genre']).drop_duplicates(subset='spotify_track_id')#[f.columns[0:5]]
-        f['spotify_genre'] = [x.strip('[]').strip('\'').split('\', \'') for x in f['spotify_genre']]
+    def __init__(self, stuff, f):
+        
         self.features = f
 
-        #stuff = pd.read_csv('Hot Stuff.csv')
-        stuff = pd.read_csv(BILLBOARD_SONGS)
         stuff['WeekID'] = pd.to_datetime(stuff['WeekID'])
         self.stuff = stuff
 
@@ -44,14 +38,18 @@ class billboard:
         self.data = self.features.join(stats, on='SongID').rename(columns={'Week Position':'Avg Weekly'})
 
     def getList(self, length=20, age=None, genre=[], artist=[]):
-        
-        startY = 2019
-        endY = 2019
-        offset_age = 15 # assume music preference starts setting in at 15 yrs old and stop at 30
-        
+
+        # As a default just use songs from the current year
+        startY = datetime.datetime.today().year
+        endY = datetime.datetime.today().year
+
+        AGE_LOWER_BOUND = 15
+        AGE_UPPER_BOUND = 30
         if age:
-            startY = datetime.datetime.now().year - int(age) + start_age
-            endY = min(startY + offset_age, 2019)
+            # Determining time range for song recommendations
+            current_year = datetime.datetime.today().year
+            startY = current_year - abs(age - AGE_LOWER_BOUND)
+            endY = current_year - abs(age - AGE_UPPER_BOUND)
             
         # songs should have left chart after lower bound (e.g. 2019 songs should still be on chart after 2019/1/1)
         lowerBound = datetime.datetime(startY, 1, 1)

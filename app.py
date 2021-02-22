@@ -143,8 +143,9 @@ def algorithms():
 
     return render_template('home/algorithms.html')
 
-
-# ------------------------------------------- FORM PAGES TASK 1.1 ---------------------------------------------------
+# ===============================================================================================================================
+# ===================================================== FORM PAGES TASK 1.1 =====================================================
+# ===============================================================================================================================
 
 
 @app.route('/form_1_1')
@@ -242,9 +243,84 @@ def gen_playlist_1_1():
 
     return render_template('task1.1/gen_playlist_success.html') 
 
-    # ------------------------------------------- FORM PAGES TASK 1.2 ---------------------------------------------------
+
+# ===============================================================================================================================
+# ===================================================== FORM PAGES TASK 1.2 =====================================================
+# ===============================================================================================================================
 
 
+@app.route('/form_1_2')
+def form_1_2():
+    
+
+    task_1_2_responses['USER_ACCESS_CODE'] = request.args.get('code')
+    
+    return render_template('task1.2/form.html', access_code = task_1_2_responses['USER_ACCESS_CODE'])
+
+@app.route('/form_success_1_2', methods=['POST'])
+def form_success_1_2():
+    '''
+    Generates the success page for when the user completes their form. Also pulls the
+    information from the form (age, genre, artist) and store them in global variables to
+    be referenced later by recommendation logic.
+
+    Returns:
+        The Flask template for the form success page
+    '''
+
+    age = request.form.get('age')
+    genre = request.form.get('genre')
+    artist = request.form.get('artist')
+
+    # Redirect to form if all fields are not present
+    if not age or not genre or not artist:
+        error_message = 'Hey! We said to fill out all the forms.'
+        return render_template('task1.2/form_failure.html',
+                                age = age,
+                                genre = genre,
+                                artist = artist)
+
+    # Set global variables based on correct input
+    task_1_2_responses['PARENT_AGE'] = int(age)
+    task_1_2_responses['PARENT_GENRE'] = genre
+    task_1_2_responses['PARENT_ARTIST'] = artist
+
+    return render_template('task1.2/form_success.html')
+
+@app.route('/gen_playlist_1_2')
+def gen_playlist_1_2():
+
+    # Re make auth object
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_2, scope=scope)
+
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(task_1_2_responses['USER_ACCESS_CODE'])
+    access_token = token_info['access_token']
+
+    # Create Spotify Object and get userID
+    sp = spotipy.Spotify(auth=access_token)
+    
+    # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
+
+
+    user = sp.current_user()['id']
+    print("Creating empty playlists for: " + str(user))
+
+    print("GENERATING SAMPLE PLAYLIST")
+    # Create a blank playlist
+    playlist_s = sp.user_playlist_create(user=user,
+                                         name='Task 1: Sample',
+                                         public = True,
+                                         collaborative = False,
+                                         description = 'This is a test')
+    print("SUCCESS: Playlist created")
+    
+
+   
+
+    return render_template('task1.2/gen_playlist_success.html') 
 
     # ------------------------------------------- FORM PAGES TASK 2.0 ---------------------------------------------------
 

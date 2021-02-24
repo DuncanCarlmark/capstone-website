@@ -210,7 +210,7 @@ def gen_playlist_1_1():
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist_s = sp.user_playlist_create(user=user,
-                                         name='Task 1: Sample',
+                                         name='Task 1.1 Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = 'This is a test')
@@ -311,7 +311,7 @@ def gen_playlist_1_2():
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist_s = sp.user_playlist_create(user=user,
-                                         name='Task 1: Sample',
+                                         name='Task 1.2 Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = 'This is a test')
@@ -390,7 +390,7 @@ def gen_playlist_2_0():
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist_s = sp.user_playlist_create(user=user,
-                                         name='Task 1: Sample',
+                                         name='Task 2.0 Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = 'This is a test')
@@ -407,7 +407,7 @@ def gen_playlist_2_0():
     # Extracting users and user history based on parent age
     chosen_users = extract_users(user_profile_df, task_2_0_responses['PARENT_AGE'], age_range)
 
-
+    print(chosen_users.shape)
 
     chosen_history = extract_histories(user_artist_df, chosen_users)
 

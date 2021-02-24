@@ -322,27 +322,60 @@ def gen_playlist_1_2():
 
     return render_template('task1.2/gen_playlist_success.html') 
 
-    # ------------------------------------------- FORM PAGES TASK 2.0 ---------------------------------------------------
+
+# ===============================================================================================================================
+# ===================================================== FORM PAGES TASK 2.0 =====================================================
+# ===============================================================================================================================
 
 
+@app.route('/form_2_0')
+def form_2_0():
+    
 
-@app.route('/gen_playlist')
-def gen_playlist():
+    task_2_0_responses['USER_ACCESS_CODE'] = request.args.get('code')
+    
+    return render_template('task2.0/form.html', access_code = task_2_0_responses['USER_ACCESS_CODE'])
+
+@app.route('/form_success_2_0', methods=['POST'])
+def form_success_2_0():
     '''
-    Generates the success page for when a playlist is created and also handles the logic for
-    when a playlist is created. This method completes both the task1 and task2 recommendations
-    and then finally outputs them as a playlist on the user's account. 
+    Generates the success page for when the user completes their form. Also pulls the
+    information from the form (age, genre, artist) and store them in global variables to
+    be referenced later by recommendation logic.
 
     Returns:
-        The flask template for the playlist success page. Technically also returns a playlist of
-        song recommendations, but this playlist is generated directly on the user's Spotify account.
+        The Flask template for the form success page
     '''
 
+    age = request.form.get('age')
+    genre = request.form.get('genre')
+    artist = request.form.get('artist')
+
+    # Redirect to form if all fields are not present
+    if not age or not genre or not artist:
+        error_message = 'Hey! We said to fill out all the forms.'
+        return render_template('task2.0/form_failure.html',
+                                age = age,
+                                genre = genre,
+                                artist = artist)
+
+    # Set global variables based on correct input
+    task_2_0_responses['PARENT_AGE'] = int(age)
+    task_2_0_responses['PARENT_GENRE'] = genre
+    task_2_0_responses['PARENT_ARTIST'] = artist
+
+    return render_template('task2.0/form_success.html')
+
+@app.route('/gen_playlist_2_0')
+def gen_playlist_2_0():
+
     # Re make auth object
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
-    # Get the actual access token
-    token_info = sp_oauth.get_access_token(global_vars['access_code'])
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_2_0, scope=scope)
+
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(task_2_0_responses['USER_ACCESS_CODE'])
     access_token = token_info['access_token']
+
     # Create Spotify Object and get userID
     sp = spotipy.Spotify(auth=access_token)
     
@@ -354,13 +387,6 @@ def gen_playlist():
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
 
-    
-    
-    
-
-    #------------------------------------------------ GENERATING DEFAULT (TASK 1) PLAYLIST --------------------------------------
-   
-
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist_s = sp.user_playlist_create(user=user,
@@ -369,120 +395,25 @@ def gen_playlist():
                                          collaborative = False,
                                          description = 'This is a test')
     print("SUCCESS: Playlist created")
-    
-
-    print("Generating song recommendations")
-    # Load in billboard data
-    billboard_songs = pd.read_csv(BILLBOARD_SONGS_PATH_CLEAN)
-    billboard_features = pd.read_csv(BILLBOARD_FEATURES_PATH_CLEAN)
-
-    # Determining time range for song recommendations
-    current_year = datetime.datetime.today().year
-    start_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_LOWER_BOUND)
-    end_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_UPPER_BOUND)
-
-    # Create billboard recommender object, generate recommendations, add to playlist
-    billboard_recommender = billboard(billboard_songs, billboard_features)
-    
-    # sample playlist for parent_to_user
-    sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
-                                                age = global_vars['PARENT_AGE'],
-                                                genre=global_vars['PARENT_GENRE'],
-                                                artist=global_vars['PARENT_ARTIST']
-                                                )
-    print("SUCCESS: Recommendations Generated")
-    print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
-    print("Playlist Length: " + str(len(sample_parent)) + " songs")
-    
-    
-    print("Populating playlist with recommendations")
-    sp.playlist_add_items(playlist_id=playlist_s['id'],
-                          items=sample_parent,
-                          position=None)
-    print("SUCCESS: Playlist populated")
-    
-
-    #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
-    
-
-    # print("GENERATING PLAYLIST 1")
-    # # Create a blank playlist
-    # playlist_t1 = sp.user_playlist_create(user=user,
-    #                         name='Task1: Playlist',
-    #                         public = True,
-    #                         collaborative = False,
-    #                         description = 'This is a test')
-    # print("SUCCESS: Playlist created")
-   
-    
-    # print("LOCATING SAMPLE PLAYLIST")
-    # playlists = sp.current_user_playlists()['items']
-    # sample_found = False # make user input for this
-    # seed_tracks = []
-    # #seed_artists = []
-    # #seed_genres = set()
-    
-    # for playlist in playlists:
-    #     if playlist['name'] == 'Task 1: Sample':
-    #         sample_found = True
-    #         print("FOUND SAMPLE PLAYLIST")
-    #         # pull songs in sample playlist 
-    #         for i in sp.playlist_tracks(playlist_id=playlist['id'])['items']:
-    #             track = i['track']
-    #             seed_tracks.append(track['id'])
-    #             #seed_artists += [track['artists'][0]['id']]
-    #             #seed_genres.add(track['genre'])
-    #         break
-    
-    # if sample_found == False:
-    #     print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
-    #     seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
-        
-    
-    # print("Generating song recommendations")
-    # billboard_reccomender = billboard(billboard_songs, billboard_features)
-    # # bbList needs to get songs in the same timeframe
-    # bbList = billboard_reccomender.getList(length=TASK1_LENGTH*2) #, age=global_vars[USER_AGE]); add input for user age
-    
-    # task1 = task1_cf(
-    #     length= TASK1_LENGTH, 
-    #     features= billboard_reccomender.billboard_features,
-    #     seed_tracks = seed_tracks
-    # )
-
-    # parent_to_user = task1.getList(test_rec=bbList)
-    
-    
-    # print("SUCCESS: Recommendations Generated")
-    # print("Playlist Length: " + str(len(parent_to_user)) + " songs")
-    
-    # print("Populating playlist with recommendations")
-    # sp.playlist_add_items(playlist_id=playlist_t1['id'], 
-    #                         items=parent_to_user, 
-    #                         position=None)
-    # print("SUCCESS: Playlist populated")
-
-    #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
-    print("GENERATING PLAYLIST 2")
-    # Create a blank playlist
-    playlist_t2 = sp.user_playlist_create(user=user,
-                            name='Task2: Playlist',
-                            public = True,
-                            collaborative = False,
-                            description = 'This is a test')
-    print("SUCCESS: Blank playlist created")
 
     print("LOADING FILES")
     print("Loading Last.fm")
     user_profile_df, user_artist_df = read_datafiles(USER_PROFILE_PATH_CLEAN, USER_ARTIST_PATH_CLEAN)
+
+    print(task_2_0_responses['PARENT_AGE'])
+    print(user_profile_df.shape)
     
     age_range = 5
     # Extracting users and user history based on parent age
-    chosen_users = extract_users(user_profile_df, global_vars['PARENT_AGE'], age_range)
+    chosen_users = extract_users(user_profile_df, task_2_0_responses['PARENT_AGE'], age_range)
+
+
+
     chosen_history = extract_histories(user_artist_df, chosen_users)
 
     # Create additional artist/user statistics for generating recommendations
     grouped_df = prepare_dataset(chosen_history)
+
 
     print("GETTING USER PLAYLISTS")
     playlist_df, current_user = pull_user_playlist_info(sp, grouped_df)
@@ -510,8 +441,204 @@ def gen_playlist():
                             items=top_song_ids, 
                             position=None)
     print("SUCCESS: Playlist populated")
+    
 
-    return render_template('gen_playlist_success.html')
+   
+
+    return render_template('task2.0/gen_playlist_success.html') 
+
+
+# ===============================================================================================================================
+# ===================================================== GARBAGE =====================================================
+# ===============================================================================================================================
+
+
+# @app.route('/gen_playlist')
+# def gen_playlist():
+#     '''
+#     Generates the success page for when a playlist is created and also handles the logic for
+#     when a playlist is created. This method completes both the task1 and task2 recommendations
+#     and then finally outputs them as a playlist on the user's account. 
+
+#     Returns:
+#         The flask template for the playlist success page. Technically also returns a playlist of
+#         song recommendations, but this playlist is generated directly on the user's Spotify account.
+#     '''
+
+#     # Re make auth object
+#     sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scope)
+#     # Get the actual access token
+#     token_info = sp_oauth.get_access_token(global_vars['access_code'])
+#     access_token = token_info['access_token']
+#     # Create Spotify Object and get userID
+#     sp = spotipy.Spotify(auth=access_token)
+    
+#     # Remove any cached tokens
+#     if os.path.exists('.cache'):
+#         os.remove('.cache')
+
+
+#     user = sp.current_user()['id']
+#     print("Creating empty playlists for: " + str(user))
+
+    
+    
+    
+
+#     #------------------------------------------------ GENERATING DEFAULT (TASK 1) PLAYLIST --------------------------------------
+   
+
+#     print("GENERATING SAMPLE PLAYLIST")
+#     # Create a blank playlist
+#     playlist_s = sp.user_playlist_create(user=user,
+#                                          name='Task 1: Sample',
+#                                          public = True,
+#                                          collaborative = False,
+#                                          description = 'This is a test')
+#     print("SUCCESS: Playlist created")
+    
+
+#     print("Generating song recommendations")
+#     # Load in billboard data
+#     billboard_songs = pd.read_csv(BILLBOARD_SONGS_PATH_CLEAN)
+#     billboard_features = pd.read_csv(BILLBOARD_FEATURES_PATH_CLEAN)
+
+#     # Determining time range for song recommendations
+#     current_year = datetime.datetime.today().year
+#     start_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_LOWER_BOUND)
+#     end_year = current_year - abs(global_vars['PARENT_AGE'] - AGE_UPPER_BOUND)
+
+#     # Create billboard recommender object, generate recommendations, add to playlist
+#     billboard_recommender = billboard(billboard_songs, billboard_features)
+    
+#     # sample playlist for parent_to_user
+#     sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
+#                                                 age = global_vars['PARENT_AGE'],
+#                                                 genre=global_vars['PARENT_GENRE'],
+#                                                 artist=global_vars['PARENT_ARTIST']
+#                                                 )
+#     print("SUCCESS: Recommendations Generated")
+#     print("Playlist Time Range: " + str(start_year) + " - "  + str(end_year))
+#     print("Playlist Length: " + str(len(sample_parent)) + " songs")
+    
+    
+#     print("Populating playlist with recommendations")
+#     sp.playlist_add_items(playlist_id=playlist_s['id'],
+#                           items=sample_parent,
+#                           position=None)
+#     print("SUCCESS: Playlist populated")
+    
+
+#     #------------------------------------------------ GENERATING TASK 1 PLAYLIST ------------------------------------------------
+    
+
+#     # print("GENERATING PLAYLIST 1")
+#     # # Create a blank playlist
+#     # playlist_t1 = sp.user_playlist_create(user=user,
+#     #                         name='Task1: Playlist',
+#     #                         public = True,
+#     #                         collaborative = False,
+#     #                         description = 'This is a test')
+#     # print("SUCCESS: Playlist created")
+   
+    
+#     # print("LOCATING SAMPLE PLAYLIST")
+#     # playlists = sp.current_user_playlists()['items']
+#     # sample_found = False # make user input for this
+#     # seed_tracks = []
+#     # #seed_artists = []
+#     # #seed_genres = set()
+    
+#     # for playlist in playlists:
+#     #     if playlist['name'] == 'Task 1: Sample':
+#     #         sample_found = True
+#     #         print("FOUND SAMPLE PLAYLIST")
+#     #         # pull songs in sample playlist 
+#     #         for i in sp.playlist_tracks(playlist_id=playlist['id'])['items']:
+#     #             track = i['track']
+#     #             seed_tracks.append(track['id'])
+#     #             #seed_artists += [track['artists'][0]['id']]
+#     #             #seed_genres.add(track['genre'])
+#     #         break
+    
+#     # if sample_found == False:
+#     #     print("SAMPLE PLAYLIST NOT FOUND, USING MOST RECENT USER DATA...")
+#     #     seed_tracks = current_user_recently_played(limit=TASK1_LENGTH)
+        
+    
+#     # print("Generating song recommendations")
+#     # billboard_reccomender = billboard(billboard_songs, billboard_features)
+#     # # bbList needs to get songs in the same timeframe
+#     # bbList = billboard_reccomender.getList(length=TASK1_LENGTH*2) #, age=global_vars[USER_AGE]); add input for user age
+    
+#     # task1 = task1_cf(
+#     #     length= TASK1_LENGTH, 
+#     #     features= billboard_reccomender.billboard_features,
+#     #     seed_tracks = seed_tracks
+#     # )
+
+#     # parent_to_user = task1.getList(test_rec=bbList)
+    
+    
+#     # print("SUCCESS: Recommendations Generated")
+#     # print("Playlist Length: " + str(len(parent_to_user)) + " songs")
+    
+#     # print("Populating playlist with recommendations")
+#     # sp.playlist_add_items(playlist_id=playlist_t1['id'], 
+#     #                         items=parent_to_user, 
+#     #                         position=None)
+#     # print("SUCCESS: Playlist populated")
+
+#     #------------------------------------------------ GENERATING TASK 2 PLAYLIST ------------------------------------------------
+#     print("GENERATING PLAYLIST 2")
+#     # Create a blank playlist
+#     playlist_t2 = sp.user_playlist_create(user=user,
+#                             name='Task2: Playlist',
+#                             public = True,
+#                             collaborative = False,
+#                             description = 'This is a test')
+#     print("SUCCESS: Blank playlist created")
+
+#     print("LOADING FILES")
+#     print("Loading Last.fm")
+#     user_profile_df, user_artist_df = read_datafiles(USER_PROFILE_PATH_CLEAN, USER_ARTIST_PATH_CLEAN)
+    
+#     age_range = 5
+#     # Extracting users and user history based on parent age
+#     chosen_users = extract_users(user_profile_df, global_vars['PARENT_AGE'], age_range)
+#     chosen_history = extract_histories(user_artist_df, chosen_users)
+
+#     # Create additional artist/user statistics for generating recommendations
+#     grouped_df = prepare_dataset(chosen_history)
+
+#     print("GETTING USER PLAYLISTS")
+#     playlist_df, current_user = pull_user_playlist_info(sp, grouped_df)
+    
+#     print("COMBINING USER HISTORY WITH LAST.FM HISTORY")
+#     updated_df = updated_df_with_user(grouped_df, playlist_df)
+
+#     print("FITTING ALS MODEL")
+#     alpha = 15
+#     # Create recommendations for current user
+#     user_id = current_user
+#     sparse_user_artist, user_vecs, artist_vecs = build_implicit_model(updated_df, alpha)
+    
+#     print("GENERATING RECOMMMENDATIONS LIST")
+#     artist_recommendations = recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
+
+    
+#     N = 50
+    
+#     print("SELECTING TOP " +str(N)+ " RECOMMENDATIONS")
+#     recommended_tracks = get_top_recommended_tracks(artist_recommendations, GENRES, N)
+
+#     print("Populating playlist with recommendation")
+#     sp.playlist_add_items(playlist_id=playlist_t2['id'], 
+#                             items=top_song_ids, 
+#                             position=None)
+#     print("SUCCESS: Playlist populated")
+
+#     return render_template('gen_playlist_success.html')
 
 
 

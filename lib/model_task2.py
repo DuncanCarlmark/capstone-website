@@ -115,7 +115,8 @@ def pull_user_playlist_info(sp, user_artist_df):
     # Artists the user has listened to-normalized
     playlist_artists = pd.Series(artists)
     playlist_grouped = playlist_artists.value_counts(normalize=True)
-    
+
+
     # Find current user and add entries for each listened artist
     no_artist = playlist_grouped.shape[0]
     curr_user = user_artist_df.iloc[-1]['user_id'] + 1

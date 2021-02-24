@@ -209,9 +209,14 @@ def recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, user_arti
     return recommendations
 
 def get_top_recommended_tracks(recommendations, genre_selection, N):
-    # Filter recommended artists by genre
-    filtered_recommendations = recommendations[recommendations.artist_genres.apply(lambda x: bool(set(x) & set(genre_selection)))]
-    top_recommended_tracks = pd.DataFrame(filtered_recommendations['artist_top_tracks'].explode())
+    print("METHOD OUTPUT")
+    # # Filter recommended artists by genre
+    # filtered_recommendations = recommendations[recommendations.artist_genres.apply(lambda x: bool(set(x) & set(genre_selection)))]
+    # top_recommended_tracks = pd.DataFrame(filtered_recommendations['artist_top_tracks'].explode())
+
+    top_recommended_tracks = pd.DataFrame(recommendations['artist_top_tracks'].explode())
+
+    print(top_recommended_tracks.shape)
     # Get the top N tracks
     tracks_output = top_recommended_tracks.reset_index(drop=True)[:N]
     return tracks_output
@@ -221,11 +226,9 @@ def get_recommended_song_ids(song_names, sp):
     id_list = []
 
     for song in song_names:
-        print(song)
         # Query spotify to get the song ID
         r = sp.search(q=song, type='track')
 
-        print(r['tracks']['items'])
         # Pulls the track ID from the first item in the query
         track_id = r['tracks']['items'][0]['id']
 

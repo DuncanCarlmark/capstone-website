@@ -415,40 +415,41 @@ def gen_playlist_2_0():
     chosen_history = extract_histories(user_artist_df, chosen_users)
 
     # Create additional artist/user statistics for generating recommendations
+    print("PREPARING USER HISTORY GIVEN AGE")
     grouped_df = prepare_dataset(chosen_history)
-
+    print("RESULTING DATAFRAME SHAPE:")
     print(grouped_df.shape)
 
     print("GETTING USER PLAYLISTS")
     playlist_df, current_user = pull_user_playlist_info(sp, grouped_df)
-    
+    print("RESULTING DATAFRAME SHAPE:")
     print(playlist_df.shape)
 
     print("COMBINING USER HISTORY WITH LAST.FM HISTORY")
     updated_df = updated_df_with_user(grouped_df, playlist_df)
-
+    print("RESULTING DATAFRAME SHAPE:")
     print(updated_df.shape)
 
+    # Create recommendations for current user
     print("FITTING ALS MODEL")
     alpha = 15
-    # Create recommendations for current user
     user_id = current_user
     sparse_user_artist, user_vecs, artist_vecs = build_implicit_model(updated_df, alpha)
     
     # Get a list of recommended artists
     print("GENERATING RECOMMMENDATIONS LIST")
     artist_recommendations = recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
-
+    print("NUMBER OF RECOMMENDED ARTISTS:")
     print(artist_recommendations.shape)
-    N = 50
-    
+
     # Get a list of recommended tracks from recommended artists
+    N = 50
     print("SELECTING TOP " +str(N)+ " RECOMMENDATIONS")
     recommended_tracks = get_top_recommended_tracks(artist_recommendations, task_2_0_responses['PARENT_GENRES'], N)
 
     print(recommended_tracks.shape)
    
-    # top_song_ids = get_recommended_song_ids(recommended_tracks['artist_top_tracks'], sp)
+    top_song_ids = get_recommended_song_ids(recommended_tracks['artist_top_tracks'], sp)
 
     print("Populating playlist with recommendation")
     sp.playlist_add_items(playlist_id=playlist['id'], 

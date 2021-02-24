@@ -36,7 +36,8 @@ BILLBOARD_FEATURES_PATH_CLEAN = os.path.join(DATA_DIR_CLEAN, 'billboard_features
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-testing = True
+testing = False
+ec2_ip = '52.10.101.200'
 
 # Client Information
 client_id = 'e6be6a0e60124f36ad99038de2f36e91'
@@ -53,8 +54,9 @@ if testing:
     redirect_uri_1_2 = 'http://localhost:8080/form_1_2'
     redirect_uri_2_0 = 'http://localhost:8080/form_2_0'
 else:
-    redirect_uri = 'http://35.166.214.194/form'
-
+    redirect_uri_1_1 = 'http://' + ec2_ip + '/form_1_1'
+    redirect_uri_1_2 = 'http://' + ec2_ip + '/form_1_2'
+    redirect_uri_2_0 = 'http://' + ec2_ip + '/form_2_0'
 # Algorithm Information
 AGE_LOWER_BOUND = 15
 AGE_UPPER_BOUND = 30

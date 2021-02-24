@@ -217,7 +217,20 @@ def get_top_recommended_tracks(recommendations, genre_selection, N):
     return tracks_output
     
     
-    
+def get_recommended_song_ids(song_names, sp):
+    id_list = []
+
+    for song in song_names:
+        print(song)
+        # Query spotify to get the song ID
+        r = sp.search(q=song, type='track')
+
+        print(r['tracks']['items'])
+        # Pulls the track ID from the first item in the query
+        track_id = r['tracks']['items'][0]['id']
+
+        id_list.append(track_id)
+    return id_list
 
 
 

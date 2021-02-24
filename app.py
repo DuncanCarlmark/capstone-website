@@ -66,14 +66,14 @@ global_vars = {
     'PARENT_ACCESS_CODE': None,
     'USER_AGE': None,
     'PARENT_AGE' : None,
-    'PARENT_GENRE' : None,
+    'PARENT_GENRES' : None,
     'PARENT_ARTIST' : None
 }
 
 task_1_1_responses = {
     'USER_ACCESS_CODE': None,
     'PARENT_AGE': None,
-    'PARENT_GENRE': None,
+    'PARENT_GENRES': None,
     'PARENT_ARTIST': None
 }
 
@@ -82,14 +82,14 @@ task_1_2_responses = {
     'PARENT_ACCESS_CODE': None,
     'USER_AGE': None,
     'PARENT_AGE': None,
-    'PARENT_GENRE': None,
+    'PARENT_GENRES': None,
     'PARENT_ARTIST': None
 }
 
 task_2_0_responses = {
     'USER_ACCESS_CODE': None,
     'PARENT_AGE': None,
-    'PARENT_GENRE': None,
+    'PARENT_GENRES': None,
     'PARENT_ARTIST': None
 }
 
@@ -181,7 +181,7 @@ def form_success_1_1():
 
     # Set global variables based on correct input
     task_1_1_responses['PARENT_AGE'] = int(age)
-    task_1_1_responses['PARENT_GENRE'] = genre
+    task_1_1_responses['PARENT_GENRES'] = genre
     task_1_1_responses['PARENT_ARTIST'] = artist
 
     return render_template('task1.1/form_success.html')
@@ -209,7 +209,7 @@ def gen_playlist_1_1():
 
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
-    playlist_s = sp.user_playlist_create(user=user,
+    playlist = sp.user_playlist_create(user=user,
                                          name='Task 1.1 Playlist',
                                          public = True,
                                          collaborative = False,
@@ -233,7 +233,7 @@ def gen_playlist_1_1():
     # sample playlist for parent_to_user
     sample_parent = billboard_recommender.getList(length = TASK1_LENGTH,
                                                 age = task_1_1_responses['PARENT_AGE'],
-                                                genre = task_1_1_responses['PARENT_GENRE'],
+                                                genre = task_1_1_responses['PARENT_GENRES'],
                                                 artist = task_1_1_responses['PARENT_ARTIST']
                                                 )
     print("SUCCESS: Recommendations Generated")
@@ -243,7 +243,7 @@ def gen_playlist_1_1():
     
     
     print("Populating playlist with recommendations")
-    sp.playlist_add_items(playlist_id=playlist_s['id'],
+    sp.playlist_add_items(playlist_id=playlist['id'],
                           items=sample_parent,
                           position=None)
     print("SUCCESS: Playlist populated")
@@ -289,7 +289,7 @@ def form_success_1_2():
 
     # Set global variables based on correct input
     task_1_2_responses['PARENT_AGE'] = int(age)
-    task_1_2_responses['PARENT_GENRE'] = genre
+    task_1_2_responses['PARENT_GENRES'] = genre
     task_1_2_responses['PARENT_ARTIST'] = artist
 
     return render_template('task1.2/form_success.html')
@@ -317,7 +317,7 @@ def gen_playlist_1_2():
 
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
-    playlist_s = sp.user_playlist_create(user=user,
+    playlist = sp.user_playlist_create(user=user,
                                          name='Task 1.2 Playlist',
                                          public = True,
                                          collaborative = False,
@@ -368,7 +368,7 @@ def form_success_2_0():
 
     # Set global variables based on correct input
     task_2_0_responses['PARENT_AGE'] = int(age)
-    task_2_0_responses['PARENT_GENRE'] = genre
+    task_2_0_responses['PARENT_GENRES'] = genre
     task_2_0_responses['PARENT_ARTIST'] = artist
 
     return render_template('task2.0/form_success.html')
@@ -396,7 +396,7 @@ def gen_playlist_2_0():
 
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
-    playlist_s = sp.user_playlist_create(user=user,
+    playlist = sp.user_playlist_create(user=user,
                                          name='Task 2.0 Playlist',
                                          public = True,
                                          collaborative = False,
@@ -407,26 +407,27 @@ def gen_playlist_2_0():
     print("Loading Last.fm")
     user_profile_df, user_artist_df = read_datafiles(USER_PROFILE_PATH_CLEAN, USER_ARTIST_PATH_CLEAN)
 
-    print(task_2_0_responses['PARENT_AGE'])
-    print(user_profile_df.shape)
+    
     
     age_range = 5
     # Extracting users and user history based on parent age
     chosen_users = extract_users(user_profile_df, task_2_0_responses['PARENT_AGE'], age_range)
-
-    print(chosen_users.shape)
-
     chosen_history = extract_histories(user_artist_df, chosen_users)
 
     # Create additional artist/user statistics for generating recommendations
     grouped_df = prepare_dataset(chosen_history)
 
+    print(grouped_df.shape)
 
     print("GETTING USER PLAYLISTS")
     playlist_df, current_user = pull_user_playlist_info(sp, grouped_df)
     
+    print(playlist_df.shape)
+
     print("COMBINING USER HISTORY WITH LAST.FM HISTORY")
     updated_df = updated_df_with_user(grouped_df, playlist_df)
+
+    print(updated_df.shape)
 
     print("FITTING ALS MODEL")
     alpha = 15
@@ -434,17 +435,23 @@ def gen_playlist_2_0():
     user_id = current_user
     sparse_user_artist, user_vecs, artist_vecs = build_implicit_model(updated_df, alpha)
     
+    # Get a list of recommended artists
     print("GENERATING RECOMMMENDATIONS LIST")
     artist_recommendations = recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
 
-    
+    print(artist_recommendations.shape)
     N = 50
     
+    # Get a list of recommended tracks from recommended artists
     print("SELECTING TOP " +str(N)+ " RECOMMENDATIONS")
-    recommended_tracks = get_top_recommended_tracks(artist_recommendations, GENRES, N)
+    recommended_tracks = get_top_recommended_tracks(artist_recommendations, task_2_0_responses['PARENT_GENRES'], N)
+
+    print(recommended_tracks.shape)
+   
+    # top_song_ids = get_recommended_song_ids(recommended_tracks['artist_top_tracks'], sp)
 
     print("Populating playlist with recommendation")
-    sp.playlist_add_items(playlist_id=playlist_t2['id'], 
+    sp.playlist_add_items(playlist_id=playlist['id'], 
                             items=top_song_ids, 
                             position=None)
     print("SUCCESS: Playlist populated")

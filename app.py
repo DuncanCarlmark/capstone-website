@@ -5,6 +5,7 @@ import spotipy
 import os
 import requests
 
+
 # Custom Classes
 from lib.billboard import *
 from lib.task1_cf import *

@@ -284,10 +284,7 @@ def gen_playlist_1_1():
                                                 artist = task_1_1_responses['PARENT_ARTIST']
                                                 )
     print("SUCCESS: Recommendations Generated")
-    
-
-    print(sample_parent)
-    
+        
     
     print("Populating playlist with recommendations")
     sp.playlist_add_items(playlist_id=playlist['id'],

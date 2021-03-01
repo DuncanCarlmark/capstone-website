@@ -38,7 +38,7 @@ BILLBOARD_FEATURES_PATH_CLEAN = os.path.join(DATA_DIR_CLEAN, 'billboard_features
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-testing = False
+testing = True
 ec2_ip = '34.221.89.23'
 
 # Client Information
@@ -399,22 +399,73 @@ def form_success_2_0():
         The Flask template for the form success page
     '''
 
+    # Results from form
     age = request.form.get('age')
-    genre = request.form.get('genre')
+    genre_1 = request.form.get('genre_1')
+    genre_2 = request.form.get('genre_2')
+    genre_3 = request.form.get('genre_3')
     artist = request.form.get('artist')
 
-    # Redirect to form if all fields are not present
-    if not age or not genre or not artist:
-        error_message = 'Hey! We said to fill out all the forms.'
+    # Condense genre input
+    genre_input = [genre_1, genre_2, genre_3]
+
+    # List of valid genres
+    genres_list = pd.read_csv('genre_list.csv')['genre_name']
+
+    print("GENRES PROVIDED BY USER")
+    print(genre_input)
+    
+    # INPUT CHECK 1
+    # Redirect to form if any required fields are not present
+    if check_for_empty_fields(age, artist, genre_input):
+        error_message = "Hey! You didn't fill out all the forms we asked you too. Please try again!"
         return render_template('task2.0/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
                                 age = age,
-                                genre = genre,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
                                 artist = artist)
 
-    # Set global variables based on correct input
+    # INPUT CHECK 2
+    # Store valid and invalid genres separately
+    valid_genres, invalid_genres = define_genre_input(genre_input, genres_list)
+
+    # If there are no vaild genres, error and send the user back to form
+    if len(invalid_genres) > 0:
+        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the drop down to ensure your entry is valid!"
+
+        return render_template('task2.0/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
+                                age = age,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
+                                artist = artist)
+
+    # INPUT CHECK 3
+    # Check if age is actually an integer
+    if not check_age_is_int(age):
+        error_message = "Hey! Please enter a valid integer for Parent Age"
+
+        return render_template('task2.0/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
+                                age = age,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
+                                artist = artist)
+
+
+    # Populate global response tracker   
     task_2_0_responses['PARENT_AGE'] = int(age)
-    task_2_0_responses['PARENT_GENRES'] = genre
     task_2_0_responses['PARENT_ARTIST'] = artist
+
+    for genre in valid_genres:
+        task_2_0_responses['PARENT_GENRES'].append(genre)
 
     return render_template('task2.0/form_success.html')
 

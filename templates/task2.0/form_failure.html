@@ -6,7 +6,7 @@
 
 
 <div class="alert alert-warning alert-dismissible fade show" role="alert">
-  Please fill out <strong>ALL</strong> forms below.
+  <p><b>{{error_message}}</b></p>
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 
@@ -24,20 +24,50 @@
 
     <div class="w-75">
       <form action="/form_success_2_0" method="POST">
-        <div class="mb-3">
-          <input type="text" class="form-control" id="input_age" value="55"
-          placeholder="Parent Age Ex: 53" name="age">
-        </div>
-        <div class="mb-3">
-          <input type="text" class="form-control" id="input_genre" value="rock"
-          placeholder="Enjoyed Genre Ex: Rock" name="genre" >
-        </div>
-        <div class="mb-3">
-          <input type="text" class="form-control" id="input_artist" value="temp"
-          placeholder="Enjoyed Artist Ex: The Eagles" name="artist" >
+
+        <div class="row mb-3">
+          <label for="input_age" class="form-label">Parent Age</label>
+          <input type="text" class="form-control" id="input_age" 
+          placeholder="Ex: 53" name="age", value="{{age}}">
         </div>
 
+        <div class="row mb-3">
+          <div class="col">
+            <label for="genre_1" class="form-label">Genre 1</label>
+            <input class="form-control" list="datalistOptions" id="genre_1" placeholder="Search genres here..." name="genre_1"
+            value="{{genre_1}}">
+            <datalist id="datalistOptions">
+
+              {% for genre in genres_list %}
+
+                <option value="{{genre}}"></option>
+
+              {% endfor %}
+            
+            </datalist>
+          </div>
+
+          <div class="col">
+            <label for="genre_2" class="form-label">Genre 2</label>
+            <input class="form-control" list="datalistOptions" id="genre_2" placeholder="Search genres here..." name="genre_2"
+            value="{{genre_2}}">
+          </div>
+
+          <div class="col">
+            <label for="genre_3" class="form-label">Genre 3</label>
+            <input class="form-control" list="datalistOptions" id="genre_3" placeholder="Search genres here..." name="genre_3"
+            value="{{genre_3}}">
+          </div>  
+        </div>
+
+        <div class="row mb-3">
+          <label for="input_artist" class="form-label">An artist your parent likes</label>
+          <input type="text" class="form-control" id="input_artist" 
+          placeholder="Ex: The Eagles" name="artist" value="{{artist}}">
+        </div> 
+
         <button type="submit" class="btn btn-primary">Submit</button>
+
       </form>
     </div>
   </div>

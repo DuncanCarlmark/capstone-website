@@ -9,7 +9,8 @@ import requests
 # Custom Classes
 from lib.billboard import *
 from lib.task1_cf import *
-from lib.model_task2 import *
+from lib.task2 import *
+from lib.task2_utils import *
 from lib.input_validation import *
 
 
@@ -501,60 +502,36 @@ def gen_playlist_2_0():
 
     print("LOADING FILES")
     print("Loading Last.fm")
-    user_profile_df, user_artist_df = read_datafiles(USER_PROFILE_PATH_CLEAN, USER_ARTIST_PATH_CLEAN)
-
     
+    # Read user-profile data (user_id, gender, age, country, registered)
+    user_profile_df = pd.read_csv(USER_PROFILE_PATH_CLEAN)
+    # Read user-artist data (user_id, artist_id, artist name, number of plays)
+    user_artist_df = pd.read_csv(USER_ARTIST_PATH_CLEAN)
     
     age_range = 5
-    # Extracting users and user history based on parent age
-    chosen_users = extract_users(user_profile_df, task_2_0_responses['PARENT_AGE'], age_range)
-    chosen_history = extract_histories(user_artist_df, chosen_users)
-
-    # Create additional artist/user statistics for generating recommendations
-    print("PREPARING USER HISTORY GIVEN AGE")
-    grouped_df = prepare_dataset(chosen_history)
-    print("RESULTING DATAFRAME SHAPE:")
-    print(grouped_df.shape)
-
-    print("GETTING USER PLAYLISTS")
-    playlist_df, current_user = pull_user_playlist_info(sp, grouped_df)
-    print("RESULTING DATAFRAME SHAPE:")
-    print(playlist_df.shape)
-
-    print("COMBINING USER HISTORY WITH LAST.FM HISTORY")
-    updated_df = updated_df_with_user(grouped_df, playlist_df)
-    print("RESULTING DATAFRAME SHAPE:")
-    print(updated_df.shape)
-
-    # Create recommendations for current user
-    print("FITTING ALS MODEL")
-    alpha = 15
-    user_id = current_user
-    sparse_user_artist, user_vecs, artist_vecs = build_implicit_model(updated_df, alpha)
+    N = 30
     
-    # Get a list of recommended artists
-    print("GENERATING RECOMMMENDATIONS LIST")
-    artist_recommendations = recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, updated_df)
-    print("NUMBER OF RECOMMENDED ARTISTS:")
-    print(artist_recommendations.shape)
+    # Initializing the Model
+    user_parent_recommender = userParent(user_profile_df, user_artist_df, task_2_0_responses['PARENT_AGE'], age_range, task_2_0_responses['PARENT_GENRES'])
 
-    # Get a list of recommended tracks from recommended artists
-    N = 50
-    print("SELECTING TOP " +str(N)+ " RECOMMENDATIONS")
-    recommended_tracks = get_top_recommended_tracks(artist_recommendations, task_2_0_responses['PARENT_GENRES'], N)
-
-    print(recommended_tracks.shape)
-   
-    top_song_ids = get_recommended_song_ids(recommended_tracks['artist_top_tracks'], sp)
+    
+    # Fitting the Model
+        
+    user_parent_recommender.fit(sp)
+    
+    # Recommending Songs
+    print('Creating list of recommended songs')
+    recommended_songs = user_parent_recommender.predict(N)
+    
+    # Output to Spotify Account
+    top_song_ids = get_recommended_song_ids(recommended_songs['song_recommendations'], sp)
 
     print("Populating playlist with recommendation")
     sp.playlist_add_items(playlist_id=playlist['id'], 
                             items=top_song_ids, 
                             position=None)
     print("SUCCESS: Playlist populated")
-    
 
-   
 
     return render_template('task2.0/gen_playlist_success.html') 
 

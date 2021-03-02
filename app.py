@@ -251,9 +251,19 @@ def gen_playlist_1_1():
     if os.path.exists('.cache'):
         os.remove('.cache')
 
-
+    # Gathering information for playlist creation
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
+
+    playlist_description = str(
+        "This is a Task 1.1 playlist created using the following parameters: " + 
+        "Parent Age: " + str(task_1_1_responses['PARENT_AGE']) + ", " +
+        "Parent Genres: " + str(task_1_1_responses['PARENT_GENRES']) + ", " +
+        "Parent Artist: " + str(task_1_1_responses['PARENT_ARTIST'])
+    )
+
+
+
 
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
@@ -261,7 +271,7 @@ def gen_playlist_1_1():
                                          name='Task 1.1 Playlist',
                                          public = True,
                                          collaborative = False,
-                                         description = 'This is a test')
+                                         description = playlist_description)
     print("SUCCESS: Playlist created")
     
 
@@ -360,13 +370,20 @@ def gen_playlist_1_2():
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
 
+    playlist_description = str(
+        "This is a Task 1.2 playlist created using the following parameters: " + 
+        "Parent Age: " + str(task_1_2_responses['PARENT_AGE']) + ", " +
+        "Parent Genres: " + str(task_1_2_responses['PARENT_GENRES']) + ", " +
+        "Parent Artist: " + str(task_1_2_responses['PARENT_ARTIST'])
+    )
+
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
                                          name='Task 1.2 Playlist',
                                          public = True,
                                          collaborative = False,
-                                         description = 'This is a test')
+                                         description = playlist_description)
     print("SUCCESS: Playlist created")
     
 
@@ -490,13 +507,20 @@ def gen_playlist_2_0():
     user = sp.current_user()['id']
     print("Creating empty playlists for: " + str(user))
 
+    playlist_description = str(
+        "This is a Task 2.0 playlist created using the following parameters: " + 
+        "Parent Age: " + str(task_2_0_responses['PARENT_AGE']) + ", " +
+        "Parent Genres: " + str(task_2_0_responses['PARENT_GENRES']) + ", " +
+        "Parent Artist: " + str(task_2_0_responses['PARENT_ARTIST'])
+    )
+
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
                                          name='Task 2.0 Playlist',
                                          public = True,
                                          collaborative = False,
-                                         description = 'This is a test')
+                                         description = playlist_description)
     print("SUCCESS: Playlist created")
 
     print("LOADING FILES")

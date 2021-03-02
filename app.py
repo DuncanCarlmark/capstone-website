@@ -67,14 +67,14 @@ TASK1_LENGTH = 20
 
 
 task_1_1_responses = {
-    'USER_ACCESS_CODE': None,
+    'USER_ACCESS_TOKEN': None,
     'PARENT_AGE': None,
     'PARENT_GENRES': [],
     'PARENT_ARTIST': None
 }
 
 task_1_2_responses = {
-    'USER_ACCESS_CODE': None,
+    'USER_ACCESS_TOKEN': None,
     'PARENT_ACCESS_CODE': None,
     'USER_AGE': None,
     'PARENT_AGE': None,
@@ -83,7 +83,7 @@ task_1_2_responses = {
 }
 
 task_2_0_responses = {
-    'USER_ACCESS_CODE': None,
+    'USER_ACCESS_TOKEN': None,
     'PARENT_AGE': None,
     'PARENT_GENRES': [],
     'PARENT_ARTIST': None
@@ -150,9 +150,24 @@ def form_1_1():
     # Load in genre list for datalist options
     genres_list = pd.read_csv('genre_list.csv')['genre_name']
 
-    # Retrieve code from authentication
-    task_1_1_responses['USER_ACCESS_CODE'] = request.args.get('code')
+    # Re make auth object
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_1, scope=scope)
+    # Pull auth code from redirect browser
+    auth_code = request.args.get('code')
+
+
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(auth_code)
+    access_token = token_info['access_token']
+
+     # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
     
+
+    # Add access token for global reference
+    task_1_1_responses['USER_ACCESS_TOKEN'] = access_token
+
     return render_template('task1.1/form.html', genres_list = genres_list)
 
 @app.route('/form_success_1_1', methods=['POST'])
@@ -238,19 +253,10 @@ def form_success_1_1():
 @app.route('/gen_playlist_1_1')
 def gen_playlist_1_1():
 
-    # Re make auth object
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_1, scope=scope)
-
-    # Get the actual access token from the user's authentication
-    token_info = sp_oauth.get_access_token(task_1_1_responses['USER_ACCESS_CODE'])
-    access_token = token_info['access_token']
-
     # Create Spotify Object and get userID
-    sp = spotipy.Spotify(auth=access_token)
+    sp = spotipy.Spotify(auth=task_1_1_responses['USER_ACCESS_TOKEN'])
     
-    # Remove any cached tokens
-    if os.path.exists('.cache'):
-        os.remove('.cache')
+   
 
     # Gathering information for playlist creation
     user = sp.current_user()['id']
@@ -315,10 +321,21 @@ def gen_playlist_1_1():
 @app.route('/form_1_2')
 def form_1_2():
     
+    # Load in genre list for datalist options
+    genres_list = pd.read_csv('genre_list.csv')['genre_name']
 
-    task_1_2_responses['USER_ACCESS_CODE'] = request.args.get('code')
-    
-    return render_template('task1.2/form.html', access_code = task_1_2_responses['USER_ACCESS_CODE'])
+    # Re make auth object
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_2, scope=scope)
+    # Pull auth code from redirect browser
+    auth_code = request.args.get('code')
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(auth_code)
+    access_token = token_info['access_token']
+
+    # Add access token for global reference
+    task_1_2_responses['USER_ACCESS_TOKEN'] = access_token
+
+    return render_template('task1.2/form.html', genres_list = genres_list)
 
 @app.route('/form_success_1_2', methods=['POST'])
 def form_success_1_2():
@@ -352,13 +369,6 @@ def form_success_1_2():
 
 @app.route('/gen_playlist_1_2')
 def gen_playlist_1_2():
-
-    # Re make auth object
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_1_2, scope=scope)
-
-    # Get the actual access token from the user's authentication
-    token_info = sp_oauth.get_access_token(task_1_2_responses['USER_ACCESS_CODE'])
-    access_token = token_info['access_token']
 
     # Create Spotify Object and get userID
     sp = spotipy.Spotify(auth=access_token)
@@ -400,11 +410,25 @@ def gen_playlist_1_2():
 
 @app.route('/form_2_0')
 def form_2_0():
+
+    
+    # Load in genre list for datalist options
+    genres_list = pd.read_csv('genre_list.csv')['genre_name']
+
+    # Re make auth object
+    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_2_0, scope=scope)
+    # Pull auth code from redirect browser
+    auth_code = request.args.get('code')
+    # Get the actual access token from the user's authentication
+    token_info = sp_oauth.get_access_token(auth_code)
+    access_token = token_info['access_token']
+
+    # Add access token for global reference
+    task_2_0_responses['USER_ACCESS_TOKEN'] = access_token
+
+    return render_template('task2.0/form.html', genres_list = genres_list)
     
 
-    task_2_0_responses['USER_ACCESS_CODE'] = request.args.get('code')
-    
-    return render_template('task2.0/form.html', access_code = task_2_0_responses['USER_ACCESS_CODE'])
 
 @app.route('/form_success_2_0', methods=['POST'])
 def form_success_2_0():
@@ -489,13 +513,6 @@ def form_success_2_0():
 
 @app.route('/gen_playlist_2_0')
 def gen_playlist_2_0():
-
-    # Re make auth object
-    sp_oauth = spotipy.oauth2.SpotifyOAuth(client_id, client_secret, redirect_uri_2_0, scope=scope)
-
-    # Get the actual access token from the user's authentication
-    token_info = sp_oauth.get_access_token(task_2_0_responses['USER_ACCESS_CODE'])
-    access_token = token_info['access_token']
 
     # Create Spotify Object and get userID
     sp = spotipy.Spotify(auth=access_token)

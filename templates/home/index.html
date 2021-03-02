@@ -3,13 +3,15 @@
 {% block content %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Navbar</a>
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='icon.svg') }}" width="60", height="45">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">Home</a>
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
                 <a class="nav-link" href="{{ url_for('about') }}">About</a>
                 <a class="nav-link" href="{{ url_for('algorithms') }}">Algorithms</a>
                 <a class="nav-link" href="https://github.com/DuncanCarlmark/DSC180b-Capstone" >Repo</a>
@@ -39,6 +41,7 @@
 
         <br>
         <hr>
+        <br>
 
         <div class="row justify-content-center">
             <h1 class="w-75" style="text-align: center"> Our Recommenders </h1>
@@ -48,13 +51,19 @@
                 characteristics and listening histories to generate separate sets of recommendations for each aprroach. To make a playlists for
                 you and your parents, click one one of the options below!
             </p>
+        </div>
+
+        
+        <br>
+        <div class="row justify-content-center">
             <p class="w-75">
                 <b>NOTE:</b> To use this service you <b>must</b> have a Spotify account. All playlists are created on the USER's 
                 account regardless.
             </p>
         </div>
 
-        <br>
+        
+
         <br>
 
 
@@ -91,6 +100,9 @@
         </div>
 
     </div>
+
+    <br>
+    <br>
 
 
 {% endblock %}

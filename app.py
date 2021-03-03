@@ -70,7 +70,8 @@ task_1_1_responses = {
     'USER_ACCESS_TOKEN': None,
     'PARENT_AGE': None,
     'PARENT_GENRES': [],
-    'PARENT_ARTIST': None
+    'PARENT_ARTIST': None,
+    'PARENT_ARTIST_GENRES': None
 }
 
 task_1_2_responses = {
@@ -79,15 +80,18 @@ task_1_2_responses = {
     'USER_AGE': None,
     'PARENT_AGE': None,
     'PARENT_GENRES': [],
-    'PARENT_ARTIST': None
+    'PARENT_ARTIST': None,
+    'PARENT_ARTIST_GENRES': None
 }
 
 task_2_0_responses = {
     'USER_ACCESS_TOKEN': None,
     'PARENT_AGE': None,
     'PARENT_GENRES': [],
-    'PARENT_ARTIST': None
+    'PARENT_ARTIST': None,
+    'PARENT_ARTIST_GENRES': None
 }
+
 
 
 # ------------------------------------------- CREATE APPLICATION ---------------------------------------------------
@@ -160,7 +164,7 @@ def form_1_1():
     token_info = sp_oauth.get_access_token(auth_code)
     access_token = token_info['access_token']
 
-     # Remove any cached tokens
+    # Remove any cached tokens
     if os.path.exists('.cache'):
         os.remove('.cache')
     
@@ -240,13 +244,29 @@ def form_success_1_1():
                                 genre_3 = genre_3,
                                 artist = artist)
 
+    # PULL ACTUAL ARTIST
+    # Create Spotify Object 
+    sp = spotipy.Spotify(auth=task_1_1_responses['USER_ACCESS_TOKEN'])
+    # Search the user's artist name and pull artist info
+    artist_r = sp.search(artist, type='artist')
+    artist_name = artist_r['artists']['items'][0]['name']
+    artist_genres = artist_r['artists']['items'][0]['genres']
+
 
     # Populate global response tracker   
     task_1_1_responses['PARENT_AGE'] = int(age)
-    task_1_1_responses['PARENT_ARTIST'] = artist
+    task_1_1_responses['PARENT_ARTIST'] = artist_name
+    task_1_1_responses['PARENT_ARTIST_GENRES'] = artist_genres
 
     for genre in valid_genres:
         task_1_1_responses['PARENT_GENRES'].append(genre)
+
+
+    # Display user params to console
+    print(f"PARENT AGE: {task_1_1_responses['PARENT_AGE']}")
+    print(f"PARENT GENRES: {task_1_1_responses['PARENT_GENRES']}")
+    print(f"PARENT ARTIST: {task_1_1_responses['PARENT_ARTIST']}")
+    print(f"PARENT ARTIST GENRES: {task_1_1_responses['PARENT_ARTIST_GENRES']}")
 
     return render_template('task1.1/form_success.html')
 
@@ -332,6 +352,10 @@ def form_1_2():
     token_info = sp_oauth.get_access_token(auth_code)
     access_token = token_info['access_token']
 
+    # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
+
     # Add access token for global reference
     task_1_2_responses['USER_ACCESS_TOKEN'] = access_token
 
@@ -347,25 +371,92 @@ def form_success_1_2():
     Returns:
         The Flask template for the form success page
     '''
-
+    # Results from form
     age = request.form.get('age')
-    genre = request.form.get('genre')
+    genre_1 = request.form.get('genre_1')
+    genre_2 = request.form.get('genre_2')
+    genre_3 = request.form.get('genre_3')
     artist = request.form.get('artist')
 
-    # Redirect to form if all fields are not present
-    if not age or not genre or not artist:
-        error_message = 'Hey! We said to fill out all the forms.'
+    # Condense genre input
+    genre_input = [genre_1, genre_2, genre_3]
+
+    # List of valid genres
+    genres_list = pd.read_csv('genre_list.csv')['genre_name']
+
+    print("GENRES PROVIDED BY USER")
+    print(genre_input)
+    
+    # INPUT CHECK 1
+    # Redirect to form if any required fields are not present
+    if check_for_empty_fields(age, artist, genre_input):
+        error_message = "Hey! You didn't fill out all the forms we asked you too. Please try again!"
         return render_template('task1.2/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
                                 age = age,
-                                genre = genre,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
                                 artist = artist)
 
-    # Set global variables based on correct input
+    # INPUT CHECK 2
+    # Store valid and invalid genres separately
+    valid_genres, invalid_genres = define_genre_input(genre_input, genres_list)
+
+    # If there are no vaild genres, error and send the user back to form
+    if len(invalid_genres) > 0:
+        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the drop down to ensure your entry is valid!"
+
+        return render_template('task1.2/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
+                                age = age,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
+                                artist = artist)
+
+    # INPUT CHECK 3
+    # Check if age is actually an integer
+    if not check_age_is_int(age):
+        error_message = "Hey! Please enter a valid integer for Parent Age"
+
+        return render_template('task1.2/form_failure.html',
+                                error_message = error_message,
+                                genres_list = genres_list,
+                                age = age,
+                                genre_1 = genre_1,
+                                genre_2 = genre_2,
+                                genre_3 = genre_3,
+                                artist = artist)
+
+    # PULL ACTUAL ARTIST
+    # Create Spotify Object 
+    sp = spotipy.Spotify(auth=task_1_2_responses['USER_ACCESS_TOKEN'])
+    # Search the user's artist name and pull artist info
+    artist_r = sp.search(artist, type='artist')
+    artist_name = artist_r['artists']['items'][0]['name']
+    artist_genres = artist_r['artists']['items'][0]['genres']
+
+
+    # Populate global response tracker   
     task_1_2_responses['PARENT_AGE'] = int(age)
-    task_1_2_responses['PARENT_GENRES'] = genre
-    task_1_2_responses['PARENT_ARTIST'] = artist
+    task_1_2_responses['PARENT_ARTIST'] = artist_name
+    task_1_2_responses['PARENT_ARTIST_GENRES'] = artist_genres
+
+    for genre in valid_genres:
+        task_1_2_responses['PARENT_GENRES'].append(genre)
+
+
+    # Display user params to console
+    print(f"PARENT AGE: {task_1_2_responses['PARENT_AGE']}")
+    print(f"PARENT GENRES: {task_1_2_responses['PARENT_GENRES']}")
+    print(f"PARENT ARTIST: {task_1_2_responses['PARENT_ARTIST']}")
+    print(f"PARENT ARTIST GENRES: {task_1_2_responses['PARENT_ARTIST_GENRES']}")
 
     return render_template('task1.2/form_success.html')
+
 
 @app.route('/gen_playlist_1_2')
 def gen_playlist_1_2():
@@ -423,6 +514,10 @@ def form_2_0():
     token_info = sp_oauth.get_access_token(auth_code)
     access_token = token_info['access_token']
 
+    # Remove any cached tokens
+    if os.path.exists('.cache'):
+        os.remove('.cache')
+
     # Add access token for global reference
     task_2_0_responses['USER_ACCESS_TOKEN'] = access_token
 
@@ -441,7 +536,7 @@ def form_success_2_0():
         The Flask template for the form success page
     '''
 
-    # Results from form
+       # Results from form
     age = request.form.get('age')
     genre_1 = request.form.get('genre_1')
     genre_2 = request.form.get('genre_2')
@@ -501,13 +596,29 @@ def form_success_2_0():
                                 genre_3 = genre_3,
                                 artist = artist)
 
+    # PULL ACTUAL ARTIST
+    # Create Spotify Object 
+    sp = spotipy.Spotify(auth=task_2_0_responses['USER_ACCESS_TOKEN'])
+    # Search the user's artist name and pull artist info
+    artist_r = sp.search(artist, type='artist')
+    artist_name = artist_r['artists']['items'][0]['name']
+    artist_genres = artist_r['artists']['items'][0]['genres']
+
 
     # Populate global response tracker   
     task_2_0_responses['PARENT_AGE'] = int(age)
-    task_2_0_responses['PARENT_ARTIST'] = artist
+    task_2_0_responses['PARENT_ARTIST'] = artist_name
+    task_2_0_responses['PARENT_ARTIST_GENRES'] = artist_genres
 
     for genre in valid_genres:
         task_2_0_responses['PARENT_GENRES'].append(genre)
+
+
+    # Display user params to console
+    print(f"PARENT AGE: {task_2_0_responses['PARENT_AGE']}")
+    print(f"PARENT GENRES: {task_2_0_responses['PARENT_GENRES']}")
+    print(f"PARENT ARTIST: {task_2_0_responses['PARENT_ARTIST']}")
+    print(f"PARENT ARTIST GENRES: {task_2_0_responses['PARENT_ARTIST_GENRES']}")
 
     return render_template('task2.0/form_success.html')
 

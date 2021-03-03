@@ -462,7 +462,7 @@ def form_success_1_2():
 def gen_playlist_1_2():
 
     # Create Spotify Object and get userID
-    sp = spotipy.Spotify(auth=access_token)
+    sp = spotipy.Spotify(auth=task_1_2_responses['USER_ACCESS_TOKEN'])
     
     # Remove any cached tokens
     if os.path.exists('.cache'):
@@ -626,7 +626,7 @@ def form_success_2_0():
 def gen_playlist_2_0():
 
     # Create Spotify Object and get userID
-    sp = spotipy.Spotify(auth=access_token)
+    sp = spotipy.Spotify(auth=task_2_0_responses['USER_ACCESS_TOKEN'])
     
     # Remove any cached tokens
     if os.path.exists('.cache'):

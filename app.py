@@ -39,8 +39,8 @@ BILLBOARD_FEATURES_PATH_CLEAN = os.path.join(DATA_DIR_CLEAN, 'billboard_features
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-testing = True
-ec2_ip = '34.221.89.23'
+testing = False
+ec2_ip = 'bridgingthegapwithmusic.com'
 
 # Client Information
 client_id = 'e6be6a0e60124f36ad99038de2f36e91'

@@ -190,9 +190,11 @@ def recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, user_arti
     for idx in content_idx:
         artist = user_artist_df.artist_name.loc[user_artist_df.artist_id == idx].iloc[0]
         try:
-            artist_uri = sp.search(artist, type='artist')['artists']['items'][0]['uri']
+            request = sp.search(artist, type='artist')
+            artist_uri = request['artists']['items'][0]['uri']
         except:
             continue
+
         artist_info = sp.artist(artist_uri)
         artist_genre = artist_info['genres']
         artist_related = get_related_artists(sp, artist_uri)
@@ -202,9 +204,14 @@ def recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, user_arti
         artist_genres.append(artist_genre)
         artist_related_artists.append(artist_related)
         related_uris = []
+
         for artist in artist_related:
-            related_uri = sp.search(artist, type='artist')['artists']['items'][0]['uri']
-            related_uris.append(related_uri)
+            try:
+                request = sp.search(artist, type='artist')
+                related_uri = request['artists']['items'][0]['uri']
+                related_uris.append(related_uri)
+            except:
+                continue
         artist_related_uris.append(related_uris)
         artist_top_tracks.append(artist_tracks)
         scores.append(recommend_vector[idx])

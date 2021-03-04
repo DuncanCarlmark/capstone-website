@@ -39,7 +39,7 @@ BILLBOARD_FEATURES_PATH_CLEAN = os.path.join(DATA_DIR_CLEAN, 'billboard_features
 
 # ------------------------------------------- DECLARE GLOBAL VARIABLES ---------------------------------------------------
 
-testing = False
+testing = True
 ec2_ip = 'bridgingthegapwithmusic.com'
 
 # Client Information
@@ -654,21 +654,29 @@ def gen_playlist_2_0():
 
     print("LOADING FILES")
     print("Loading Last.fm")
-    
     # Read user-profile data (user_id, gender, age, country, registered)
     user_profile_df = pd.read_csv(USER_PROFILE_PATH_CLEAN)
     # Read user-artist data (user_id, artist_id, artist name, number of plays)
     user_artist_df = pd.read_csv(USER_ARTIST_PATH_CLEAN)
     
+    print("Initializing model parameters")
+    # Establish parameters for user-parent model
     age_range = 5
     N = 30
     
+    print("Initializing model object")
     # Initializing the Model
-    user_parent_recommender = userParent(user_profile_df, user_artist_df, task_2_0_responses['PARENT_AGE'], age_range, task_2_0_responses['PARENT_GENRES'])
+    user_parent_recommender = userParent(
+        user_profile_df, 
+        user_artist_df, 
+        task_2_0_responses['PARENT_AGE'], 
+        age_range, 
+        task_2_0_responses['PARENT_GENRES']
+    )
 
     
     # Fitting the Model
-        
+    print("Fitting Spotipy object to file")
     user_parent_recommender.fit(sp)
     
     # Recommending Songs

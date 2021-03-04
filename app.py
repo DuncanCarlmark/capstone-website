@@ -8,7 +8,7 @@ import requests
 
 # Custom Classes
 from lib.billboard import *
-from lib.task1_cf import *
+from lib.task1_hybrid import *
 from lib.task2 import *
 from lib.task2_utils import *
 from lib.input_validation import *
@@ -479,7 +479,7 @@ def gen_playlist_1_2():
         "Parent Artist: " + str(task_1_2_responses['PARENT_ARTIST'])
     )
 
-    print("GENERATING SAMPLE PLAYLIST")
+    print("GENERATING TASK 1.2 PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
                                          name='Task 1.2 Playlist',
@@ -488,7 +488,47 @@ def gen_playlist_1_2():
                                          description = playlist_description)
     print("SUCCESS: Playlist created")
     
-
+    print("LOADING FILES")
+    print("Loading Last.fm")
+    # Read user-profile data (user_id, gender, age, country, registered)
+    user_profile_df = pd.read_csv(USER_PROFILE_PATH_CLEAN)[['user_id', 'age']]
+    # Read user-artist data (user_id, artist_id, artist name, number of plays)
+    user_artist_df = pd.read_csv(USER_ARTIST_PATH_CLEAN)
+    
+    print("Loading your Spotify top tracks")
+    top_tracks = sp.current_user_top_tracks(limit=50, time_range='medium_term')['items']
+    
+    print("Initializing model parameters")
+    # Establish parameters for parent-user model
+    age_range = 2
+    N = 30
+    
+    print("Initializing model object")
+    # Initializing the Model
+    parent_user_recommender = parentUser(
+        top_tracks,
+        user_profile_df, 
+        user_artist_df, 
+        task_1_2_responses['PARENT_AGE'], 
+        age_range,
+    )
+    
+    parent_user_recommender.fit()
+    
+    top_artists = parent_user_recommender.predict_artists()
+    
+    top_artists_id = []
+    for artist_name in top_artists:
+        top_artists_id.append(sp.search(artist_name, type='artist')['artists']['items'][0]['id'])
+    
+    top_song_ids = parent_user_recommender.predict_songs(top_artists_id, N, sp)
+    
+    # Output to Spotify Account
+    print("Populating playlist with recommendation")
+    sp.playlist_add_items(playlist_id=playlist['id'], 
+                            items=top_song_ids, 
+                            position=None)
+    print("SUCCESS: Playlist populated")
    
 
     return render_template('task1.2/gen_playlist_success.html') 

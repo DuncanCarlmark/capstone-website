@@ -166,7 +166,7 @@ def get_top_tracks(sp, uri):
     top_tracks = sp.artist_top_tracks(uri)
     top_lst = []
     for track in top_tracks['tracks'][:5]:
-        top_lst.append(track['name'])
+        top_lst.append(track['id'])
     return top_lst
 
 def recommend(sp, user_id, sparse_user_artist, user_vecs, artist_vecs, user_artist_df, num_contents=100):
@@ -227,6 +227,7 @@ def get_top_recommended_tracks(sp, recommendations, genre_selection, N):
     
     #Find related artists to generate more songs-add those to filtered recommended songs
     if len(filtered_recommendations) < 10:
+        related_artist_names = list(filtered_recommendations['artists_related'].explode())
         related_artists_lst = list(filtered_recommendations['artists_related_uris'].explode())
         related_tracks_lst = []
         for artist in related_artists_lst:
@@ -248,12 +249,12 @@ def get_recommended_song_ids(song_names, sp):
 
     for song in song_names:
         # Query spotify to get the song ID
-        r = sp.search(q=song, type='track')
+        #r = sp.search(q=song, type='track')
 
         # Pulls the track ID from the first item in the query
-        track_id = r['tracks']['items'][0]['id']
+        #track_id = r['tracks']['items'][0]['id']
 
-        id_list.append(track_id)
+        id_list.append(song)
     return id_list
     
     

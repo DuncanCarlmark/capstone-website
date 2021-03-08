@@ -102,7 +102,7 @@ class parentUser:
         df = pd.concat(dfrow).reset_index(drop=True)
         return df
 
-    def euclidean(row_a, row_b, n=range(1,12):
+    def euclidean(row_a, row_b, n=range(1,12)):
         # get euclidean distance for features
         euc = 0
         for i in n:

@@ -523,10 +523,10 @@ def gen_playlist_1_2():
     
     top_artists_id = []
     for artist_name in top_artists:
-    try:
-        top_artists_id.append(sp.search(artist_name, type='artist')['artists']['items'][0]['id'])
-    except IndexError:
-        pass  # do nothing!
+        try:
+            top_artists_id.append(sp.search(artist_name, type='artist')['artists']['items'][0]['id'])
+        except IndexError:
+            pass  # do nothing!
     
     print("Getting preferred songs...")
     top_song_ids = parent_user_recommender.predict_songs(top_artists_id, N, sp)

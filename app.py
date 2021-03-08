@@ -506,6 +506,7 @@ def gen_playlist_1_2():
     print("Initializing model object")
     # Initializing the Model
     parent_user_recommender = parentUser(
+        username='new'
         top_tracks,
         user_profile_df, 
         user_artist_df, 

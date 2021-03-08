@@ -121,7 +121,7 @@ class parentUser:
         new_sf = sp.audio_features(new_songs)
         seed_sf = sp.audio_features(seed_tracks)
         
-        
+        # change to dataframes
         new_df = get_audio_df(new_sf)
         seed_df = get_audio_df(seed_sf)
         seed_preference = seed_df.mean()

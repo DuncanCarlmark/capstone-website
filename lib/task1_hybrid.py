@@ -9,7 +9,7 @@ from lightfm.data import Dataset
 
 class parentUser:
     
-    def __init__(username, top_tracks, user_profile, user_artist, input_age, age_offset):
+    def __init__(self, username, top_tracks, user_profile, user_artist, input_age, age_offset):
         # get and build data from parent(=seed)
         seed_tracks = set()
         seed_artists = []
@@ -121,7 +121,7 @@ class parentUser:
         new_sf = sp.audio_features(new_songs)
         seed_sf = sp.audio_features(seed_tracks)
         
-        
+        # change to dataframes
         new_df = get_audio_df(new_sf)
         seed_df = get_audio_df(seed_sf)
         seed_preference = seed_df.mean()

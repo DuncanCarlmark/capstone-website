@@ -39,7 +39,15 @@
         <h1 class="w-75" style="text-align: center;">Task 2:</h1>
 
         <p class="w-75">
-            Text here
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We implement Implicit using alternating least squares to build similarity between the user’s playlist information 
+            and older users (users in the parent’s age range) in the LastFM dataset. For our implicit feedback model, we use plays (number of interactions) as our “rating.” Once we fit the model, we 
+            can now build recommendations for the particular user, in this case the user who has requested a playlist for their parent, and a list 
+            of recommended artists is returned. In our initial responses collected by the user, we collected the parent’s favored genres so we use 
+            that data to filter down the recommended artists. We use Spotipy, which is a Python library for the Spotify Web API, to collect the 
+            genre for each artist and we then filter the list of recommended artists down to artists that are represented by the favored genre of 
+            the parent. We can then use Spotify’s top tracks to build a playlist from these filtered recommended artists to get a final list of 
+            songs that is outputted to a playlist on the user’s Spotify account. 
+
         </p>
 
     </div>

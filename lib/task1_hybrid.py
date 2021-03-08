@@ -9,7 +9,7 @@ from lightfm.data import Dataset
 
 class parentUser:
     
-    def __init__(username, top_tracks, user_profile, user_artist, input_age, age_offset):
+    def __init__(self, username, top_tracks, user_profile, user_artist, input_age, age_offset):
         # get and build data from parent(=seed)
         seed_tracks = set()
         seed_artists = []

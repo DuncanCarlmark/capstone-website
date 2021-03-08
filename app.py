@@ -513,15 +513,22 @@ def gen_playlist_1_2():
         task_1_2_responses['PARENT_AGE'], 
         age_range,
     )
-    
-    parent_user_recommender.fit()
-    
+    print("Fitting data")
+    parent_user_recommender.fit_data()
+    print("Fitting model")
+    parent_user_recommender.fit_model()
+
+    print("Getting preferred artists...")
     top_artists = parent_user_recommender.predict_artists()
     
     top_artists_id = []
     for artist_name in top_artists:
+    try:
         top_artists_id.append(sp.search(artist_name, type='artist')['artists']['items'][0]['id'])
+    except IndexError:
+        pass  # do nothing!
     
+    print("Getting preferred songs...")
     top_song_ids = parent_user_recommender.predict_songs(top_artists_id, N, sp)
     
     # Output to Spotify Account

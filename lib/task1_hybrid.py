@@ -10,7 +10,6 @@ from lightfm.data import Dataset
 class parentUser:
     
     def __init__(username, top_tracks, user_profile, user_artist, input_age, age_offset):
-
         # get and build data from parent(=seed)
         seed_tracks = set()
         seed_artists = []
@@ -70,8 +69,7 @@ class parentUser:
         model = LightFM(loss=loss)
         model.fit(interactions=interactions_built, sample_weight=weights_built, epochs=30, num_threads=2)
         self.lfm_model = model
-    
-    
+        
     def predict_artists(artist_length=10):
         # rank artists for parent
         test_int, test_weight = self.lfm_data.build_interactions([(self.username, x) for x in self.lastfm_artists])
@@ -91,29 +89,27 @@ class parentUser:
 #     def evaluate():
 #         # train_auc = auc_score(model, interactions_built).mean()
 #         # print('Hybrid training set AUC: %s' % train_auc)
-    
-    def predict_songs(top_artists, playlist_length, sp):
-        
-                # get audio features for songs
-        def get_audio_df(song_features):
-            audio_feature_list = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 
-                          'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
-            dfrow = []
-            for song in song_features:
-                row = [song['id']]
-                for feature in audio_feature_list:
-                    row.append(song[feature])
-                dfrow.append(pd.DataFrame([row]))
-            df = pd.concat(dfrow).reset_index(drop=True)
-            return df
 
+    def get_audio_df(song_features):
+        audio_feature_list = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 
+                      'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
+        dfrow = []
+        for song in song_features:
+            row = [song['id']]
+            for feature in audio_feature_list:
+                row.append(song[feature])
+            dfrow.append(pd.DataFrame([row]))
+        df = pd.concat(dfrow).reset_index(drop=True)
+        return df
+
+    def euclidean(row_a, row_b, n=range(1,12):
         # get euclidean distance for features
-        def euclidean(row_a, row_b, n=range(1,12):
-            euc = 0
-            for i in n:
-                euc += (row_a[i]-row_b[i])**2
-            return round(np.sqrt(euc),1)
-                      
+        euc = 0
+        for i in n:
+            euc += (row_a[i]-row_b[i])**2
+        return round(np.sqrt(euc),1)
+    
+    def predict_songs(top_artists, playlist_length, sp):                     
         # get top 10 songs for each recommended artist (total = 100 songs)
         new_songs = []
         for artist_id in top_artists:
@@ -121,8 +117,10 @@ class parentUser:
                 new_songs.append(track['id'])
         new_songs = list(set(new_songs)-set(seed_tracks))
         
+        # get audio features for songs
         new_sf = sp.audio_features(new_songs)
         seed_sf = sp.audio_features(seed_tracks)
+        
         
         new_df = get_audio_df(new_sf)
         seed_df = get_audio_df(seed_sf)

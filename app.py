@@ -204,7 +204,7 @@ def form_success_1_1():
     # INPUT CHECK 1
     # Redirect to form if any required fields are not present
     if check_for_empty_fields(age, artist, genre_input):
-        error_message = "Hey! You didn't fill out all the forms we asked you too. Please try again!"
+        error_message = "Hey! You didn't fill out all the forms we asked you to. Please try again!"
         return render_template('task1.1/form_failure.html',
                                 error_message = error_message,
                                 genres_list = genres_list,
@@ -220,7 +220,7 @@ def form_success_1_1():
 
     # If there are no vaild genres, error and send the user back to form
     if len(invalid_genres) > 0:
-        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the drop down to ensure your entry is valid!"
+        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the dropdown to ensure your entry is valid!"
 
         return render_template('task1.1/form_failure.html',
                                 error_message = error_message,
@@ -284,7 +284,7 @@ def gen_playlist_1_1():
     print("Creating empty playlists for: " + str(user))
 
     playlist_description = str(
-        "This is a Task 1.1 playlist created using the following parameters: " + 
+        "This is a sample playlist created using the following parameters: " + 
         "Parent Age: " + str(task_1_1_responses['PARENT_AGE']) + ", " +
         "Parent Genres: " + str(task_1_1_responses['PARENT_GENRES']) + ", " +
         "Parent Artist: " + str(task_1_1_responses['PARENT_ARTIST'])
@@ -293,7 +293,7 @@ def gen_playlist_1_1():
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
-                                         name='Task 1.1 Playlist',
+                                         name='Sample Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = playlist_description)
@@ -386,7 +386,7 @@ def form_success_1_2():
     # INPUT CHECK 1
     # Redirect to form if any required fields are not present
     if check_for_empty_fields(age, artist, genre_input):
-        error_message = "Hey! You didn't fill out all the forms we asked you too. Please try again!"
+        error_message = "Hey! You didn't fill out all the forms we asked you to. Please try again!"
         return render_template('task1.2/form_failure.html',
                                 error_message = error_message,
                                 genres_list = genres_list,
@@ -402,7 +402,7 @@ def form_success_1_2():
 
     # If there are no vaild genres, error and send the user back to form
     if len(invalid_genres) > 0:
-        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the drop down to ensure your entry is valid!"
+        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the dropdown to ensure your entry is valid!"
 
         return render_template('task1.2/form_failure.html',
                                 error_message = error_message,
@@ -416,7 +416,7 @@ def form_success_1_2():
     # INPUT CHECK 3
     # Check if age is actually an integer
     if not check_age_is_int(age):
-        error_message = "Hey! Please enter a valid integer for Parent Age"
+        error_message = "Hey! Please enter a valid integer for User/child Age"
 
         return render_template('task1.2/form_failure.html',
                                 error_message = error_message,
@@ -469,16 +469,16 @@ def gen_playlist_1_2():
     print("Creating empty playlists for: " + str(user))
 
     playlist_description = str(
-        "This is a Task 1.2 playlist created using the following parameters: " + 
-        "Parent Age: " + str(task_1_2_responses['PARENT_AGE']) + ", " +
-        "Parent Genres: " + str(task_1_2_responses['PARENT_GENRES']) + ", " +
-        "Parent Artist: " + str(task_1_2_responses['PARENT_ARTIST'])
+        "This is a Parent-to-User recommendation playlist, created using the following parameters: " + 
+        "User/child Age: " + str(task_1_2_responses['PARENT_AGE']) + ", " +
+        "User/child Genres: " + str(task_1_2_responses['PARENT_GENRES']) + ", " +
+        "User/child Artist: " + str(task_1_2_responses['PARENT_ARTIST'])
     )
 
     print("GENERATING TASK 1.2 PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
-                                         name='Task 1.2 Playlist',
+                                         name='Parent-User Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = playlist_description)
@@ -599,7 +599,7 @@ def form_success_2_0():
     # INPUT CHECK 1
     # Redirect to form if any required fields are not present
     if check_for_empty_fields(age, artist, genre_input):
-        error_message = "Hey! You didn't fill out all the forms we asked you too. Please try again!"
+        error_message = "Hey! You didn't fill out all the forms we asked you to. Please try again!"
         return render_template('task2.0/form_failure.html',
                                 error_message = error_message,
                                 genres_list = genres_list,
@@ -615,7 +615,7 @@ def form_success_2_0():
 
     # If there are no vaild genres, error and send the user back to form
     if len(invalid_genres) > 0:
-        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the drop down to ensure your entry is valid!"
+        error_message = "Hey! These genres are invalid: " + str(invalid_genres) + ". Please use the dropdown to ensure your entry is valid!"
 
         return render_template('task2.0/form_failure.html',
                                 error_message = error_message,
@@ -681,7 +681,7 @@ def gen_playlist_2_0():
     print("Creating empty playlists for: " + str(user))
 
     playlist_description = str(
-        "This is a Task 2.0 playlist created using the following parameters: " + 
+        "This is a User-to-Parent recommendation playlist, created using the following parameters: " + 
         "Parent Age: " + str(task_2_0_responses['PARENT_AGE']) + ", " +
         "Parent Genres: " + str(task_2_0_responses['PARENT_GENRES']) + ", " +
         "Parent Artist: " + str(task_2_0_responses['PARENT_ARTIST'])
@@ -690,7 +690,7 @@ def gen_playlist_2_0():
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
-                                         name='Task 2.0 Playlist',
+                                         name='User-Parent Playlist',
                                          public = True,
                                          collaborative = False,
                                          description = playlist_description)

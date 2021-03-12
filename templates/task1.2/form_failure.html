@@ -17,16 +17,16 @@
 
   <div class="row justify-content-center">
 
-    <h1 class="w-75" style="text-align:center">Parent Information</h1>
+    <h1 class="w-75" style="text-align:center">User/Child Information</h1>
     <p class="w-75" style="text-align:center">In order for us to make accurate recommendations, we need to know a little information first!</p>
     <p class="w-75" style="text-align:center"> Please fill out the forms below with one entry only for each form.</p>
-    <p class="w-75" style="text-align:center">This basic information will allow our algorithm to make somewhat personalize recommendations for your playlist.</p>
+    <p class="w-75" style="text-align:center">This basic information will allow our algorithm to make personalized recommendations for your playlist.</p>
 
     <div class="w-75">
       <form action="/form_success_1_2" method="POST">
 
         <div class="row mb-3">
-          <label for="input_age" class="form-label">Parent Age</label>
+          <label for="input_age" class="form-label">User Age</label>
           <input type="text" class="form-control" id="input_age" 
           placeholder="Ex: 53" name="age", value="{{age}}">
         </div>
@@ -61,7 +61,7 @@
         </div>
 
         <div class="row mb-3">
-          <label for="input_artist" class="form-label">An artist your parent likes</label>
+          <label for="input_artist" class="form-label">An artist you like</label>
           <input type="text" class="form-control" id="input_artist" 
           placeholder="Ex: The Eagles" name="artist" value="{{artist}}">
         </div> 

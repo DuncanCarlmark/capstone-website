@@ -1,35 +1,33 @@
 import pandas as pd
 import numpy as np
 import datetime
-import os
-import requests
-
 
 class billboard:
-    def __init__(self, stuff, f):
+    def __init__(self, billboard_songs, billboard_features):
         
-        self.features = f
+        # Column must be converted to datetime any time the file is read in
+        billboard_songs['WeekID'] = pd.to_datetime(billboard_songs.reset_index()['WeekID'])
 
-        stuff['WeekID'] = pd.to_datetime(stuff['WeekID'])
-        self.stuff = stuff
+        self.billboard_songs = billboard_songs
+        self.billboard_features = billboard_features
 
     def weeklyAvg(self):
         # average weekly position
-        avg_pos = self.stuff[['WeekID', 'Week Position', 'SongID']].groupby(by=['SongID']).mean()
+        avg_pos = self.billboard_songs[['WeekID', 'Week Position', 'SongID']].groupby(by=['SongID']).mean()
         # first week the track appeared in the chart
-        minweek = self.stuff[['WeekID', 'SongID']].groupby(by=['SongID']).min().rename(columns={'WeekID':'firstWeekID'})
+        minweek = self.billboard_songs[['WeekID', 'SongID']].groupby(by=['SongID']).min().rename(columns={'WeekID':'firstWeekID'})
         # last week the track appeared in the chart
-        maxweek = self.stuff[['WeekID', 'SongID']].groupby(by=['SongID']).max().rename(columns={'WeekID':'lastWeekID'})
+        maxweek = self.billboard_songs[['WeekID', 'SongID']].groupby(by=['SongID']).max().rename(columns={'WeekID':'lastWeekID'})
         # total # of weeks the track was in the chart
-        max_occ = self.stuff[['SongID','Instance','Weeks on Chart']].groupby(by=['SongID']).max()
+        max_occ = self.billboard_songs[['SongID','Instance','Weeks on Chart']].groupby(by=['SongID']).max()
 
         stats = avg_pos.join(minweek).join(maxweek).join(max_occ)
-        self.data = self.features.join(stats, on='SongID').rename(columns={'Week Position':'Avg Weekly'})
+        self.data = self.billboard_features.join(stats, on='SongID').rename(columns={'Week Position':'Avg Weekly'})
 
-    def getList(self, length=20, age=None, genre=[], artist=[]):
+    def getList(self, length=30, age=None, genre=[], artist=[]):
 
         # As a default just use songs from the current year
-        startY = datetime.datetime.today().year
+        startY = 2019
         endY = datetime.datetime.today().year
 
         AGE_LOWER_BOUND = 15
@@ -44,8 +42,7 @@ class billboard:
         lowerBound = datetime.datetime(startY, 1, 1)
         # songs should have entered chart before upper bound (e.g. 2019 songs should have been on chart before 2019/12/31)
         upperBound = datetime.datetime(endY, 12, 31)
-
-        #if how == '' #implement later for other possible ranking methods
+        
         self.weeklyAvg()
 
         data = self.data
@@ -56,8 +53,8 @@ class billboard:
         
         playlist = filter_g.append(filter_a)
         
-#         if len(playlist) < length:
-#             playlist = filter_t
+        if len(playlist) < length:
+            playlist = filter_t
         
         playlist.sort_values(['Instance','Avg Weekly','Weeks on Chart'], ascending=[True,True,False], inplace=True, ignore_index=True)
 

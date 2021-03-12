@@ -7,8 +7,8 @@ import requests
 
 
 # Custom Classes
-from lib.billboard import *
-from lib.task1_hybrid import *
+from lib.task0 import *
+from lib.task1 import *
 from lib.task2 import *
 from lib.task2_utils import *
 from lib.input_validation import *
@@ -60,6 +60,7 @@ else:
     redirect_uri_1_1 = 'http://' + ec2_ip + '/form_1_1'
     redirect_uri_1_2 = 'http://' + ec2_ip + '/form_1_2'
     redirect_uri_2_0 = 'http://' + ec2_ip + '/form_2_0'
+
 # Algorithm Information
 AGE_LOWER_BOUND = 15
 AGE_UPPER_BOUND = 30
@@ -289,9 +290,6 @@ def gen_playlist_1_1():
         "Parent Artist: " + str(task_1_1_responses['PARENT_ARTIST'])
     )
 
-
-
-
     print("GENERATING SAMPLE PLAYLIST")
     # Create a blank playlist
     playlist = sp.user_playlist_create(user=user,
@@ -308,7 +306,6 @@ def gen_playlist_1_1():
     billboard_features = pd.read_csv(BILLBOARD_FEATURES_PATH_CLEAN)
 
     print("CHECKING DATA")
-
     print(billboard_songs.shape)
     print(billboard_features.shape)
 
@@ -322,7 +319,6 @@ def gen_playlist_1_1():
                                                 artist = task_1_1_responses['PARENT_ARTIST']
                                                 )
     print("SUCCESS: Recommendations Generated")
-        
     
     print("Populating playlist with recommendations")
     sp.playlist_add_items(playlist_id=playlist['id'],
@@ -495,13 +491,13 @@ def gen_playlist_1_2():
     # Read user-artist data (user_id, artist_id, artist name, number of plays)
     user_artist_df = pd.read_csv(USER_ARTIST_PATH_CLEAN)
     
-    print("Loading your Spotify top tracks")
-    top_tracks = sp.current_user_top_tracks(limit=50, time_range='medium_term')['items']
-    
     print("Initializing model parameters")
     # Establish parameters for parent-user model
     age_range = 2
     N = 30
+    
+    print("Loading your Spotify top tracks")
+    top_tracks = sp.current_user_top_tracks(limit=50, time_range='medium_term')['items']
     
     print("Initializing model object")
     # Initializing the Model

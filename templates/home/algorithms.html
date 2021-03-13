@@ -21,11 +21,13 @@
     </div>
 </nav>
 
+<br>
+<br>
 
 <div class="container">
     <div class="row justify-content-center">
         <h1 class="w-75" style="text-align: center;">Sample Playlist</h1>
-        <img src="{{ url_for('static', filename='flow1.png') }}">
+        <img src="{{ url_for('static', filename='flow1.png') }}" width="800", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For the sample recommender, we use a TopPopular recommender where we rank the "popularity" of
@@ -43,7 +45,7 @@
         <hr>
 
         <h1 class="w-75" style="text-align: center;">Parent-User Playlist</h1>
-        <img src="{{ url_for('static', filename='flow2.png') }}">
+        <img src="{{ url_for('static', filename='flow2.png') }}" width="800", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The parent-to-user recommender uses a hybrid approach, meaning that it uses both collaborative filtering (CF) 
@@ -64,8 +66,8 @@
             user/child's age and only get Last.fm users within a similar age range (+-2 years).
             Each user-artist interaction in both Last.fm and the parent's listening history counts as a positive interaction
             (the user "likes" the artist) used to build LightFM's model. LightFM essentially represents each user and item (artist)
-            as the sum of latent vectors, and finds the dot product of those representations using the equation:
-            <img src="{{ url_for('static', filename='eq1.png') }}">,
+            as the sum of latent vectors, and finds the dot product of those representations using the formula
+            <img src="{{ url_for('static', filename='eq1.png') }}" width="200", height="100">,
             with q<sub>u</sub> representing the user's latent representation,
             p<sub>i</sub> representing the item's representation, and with b<sub>u</sub> and b<sub>i</sub> each
             representing bias terms for the user and the item.
@@ -79,8 +81,8 @@
             So for the CBF method, we decided to use euclidean distance to calculate the distance between other songs and the parent's top tracks,
             using the songs' audio features from Spotify. From a list of artists (defaulted to 10, since Spotify only allows pulling audio
             information for up to 100 songs at a time), we get the top 10 songs for each artist on Spotify and compile a list of songs.
-            We calculate the euclidean distance between those songs and the parent's preferred songs, using the formula:
-            <img src="{{ url_for('static', filename='eq2.png') }}">, where p<sub>i</sub> and q<sub>i</sub> are the i<super>th</super>
+            We calculate the euclidean distance between those songs and the parent's preferred songs, using the formula
+            <img src="{{ url_for('static', filename='eq2.png') }}" width="180", height="50">, where p<sub>i</sub> and q<sub>i</sub> are the i<super>th</super>
             audio features from arbitrary song p and parent's song q, from 11 features (<i>danceability, energy, key, loudness, mode, speechiness,  acousticness,
             instrumentalness, liveness, valence, and tempo</i>). We get the minimum Euclidean distance from each song in the list
             to each of the parent's songs, and rank the songs by shortest distance to recommend songs that are the most
@@ -91,7 +93,7 @@
         <hr>
 
         <h1 class="w-75" style="text-align: center;">User-Parent Playlist</h1>
-        <img src="{{ url_for('static', filename='flow3.png') }}">
+        <img src="{{ url_for('static', filename='flow3.png') }}" width="800", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We implement <a href="https://github.com/benfred/implicit">Implicit</a>[2] using <a href="https://medium.com/radon-dev/als-implicit-collaborative-filtering-5ed653ba39fe">alternating least squares</a>

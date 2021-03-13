@@ -79,7 +79,7 @@
             So for the CBF method, we decided to use euclidean distance to calculate the distance between other songs and the parent's top tracks,
             using the songs' audio features from Spotify. From a list of artists (defaulted to 10, since Spotify only allows pulling audio
             information for up to 100 songs at a time), we get the top 10 songs for each artist on Spotify and compile a list of songs.
-            We calculate the euclidean distance between those songs and the parent's preferred songs, using the formula
+            We calculate the euclidean distance between those songs and the parent's preferred songs, using the formula:
             <img src="{{ url_for('static', filename='eq2.png') }}">, where p<sub>i</sub> and q<sub>i</sub> are the i<super>th</super>
             audio features from arbitrary song p and parent's song q, from 11 features (<i>danceability, energy, key, loudness, mode, speechiness,  acousticness,
             instrumentalness, liveness, valence, and tempo</i>). We get the minimum Euclidean distance from each song in the list

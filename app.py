@@ -56,6 +56,7 @@ if testing:
     redirect_uri_1_1 = 'http://localhost:8080/form_1_1'
     redirect_uri_1_2 = 'http://localhost:8080/form_1_2'
     redirect_uri_2_0 = 'http://localhost:8080/form_2_0'
+    
 else:
     redirect_uri_1_1 = 'http://' + ec2_ip + '/form_1_1'
     redirect_uri_1_2 = 'http://' + ec2_ip + '/form_1_2'
@@ -64,7 +65,7 @@ else:
 # Algorithm Information
 AGE_LOWER_BOUND = 15
 AGE_UPPER_BOUND = 30
-TASK1_LENGTH = 20
+TASK1_LENGTH = 30
 
 
 task_1_1_responses = {

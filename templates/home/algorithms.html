@@ -27,7 +27,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <h1 class="w-75" style="text-align: center;">Sample Playlist</h1>
-        <img src="{{ url_for('static', filename='flow1.png') }}" width="800", height="450">
+        <img src="{{ url_for('static', filename='flow1.png') }}" width="500", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For the sample recommender, we use a TopPopular recommender where we rank the "popularity" of
@@ -45,7 +45,7 @@
         <hr>
 
         <h1 class="w-75" style="text-align: center;">Parent-User Playlist</h1>
-        <img src="{{ url_for('static', filename='flow2.png') }}" width="800", height="450">
+        <img src="{{ url_for('static', filename='flow2.png') }}" width="500", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The parent-to-user recommender uses a hybrid approach, meaning that it uses both collaborative filtering (CF) 
@@ -79,10 +79,10 @@
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LightFM does have CBF functionality, but we found out that its item features implementation does not work as intended.
             So for the CBF method, we decided to use euclidean distance to calculate the distance between other songs and the parent's top tracks,
-            using the songs' audio features from Spotify. From a list of artists (defaulted to 10, since Spotify only allows pulling audio
-            information for up to 100 songs at a time), we get the top 10 songs for each artist on Spotify and compile a list of songs.
+            using the songs' audio features from Spotify. From a list of artists <i>(defaulted to 10, since Spotify only allows pulling audio
+            information for up to 100 songs at a time)</i>, we get the top 10 songs for each artist on Spotify and compile a list of songs.
             We calculate the euclidean distance between those songs and the parent's preferred songs, using the formula
-            <img src="{{ url_for('static', filename='eq2.png') }}" width="180", height="50">, where p<sub>i</sub> and q<sub>i</sub> are the i<super>th</super>
+            <img src="{{ url_for('static', filename='eq2.png') }}" width="200", height="80">, where p<sub>i</sub> and q<sub>i</sub> are the i<super>th</super>
             audio features from arbitrary song p and parent's song q, from 11 features (<i>danceability, energy, key, loudness, mode, speechiness,  acousticness,
             instrumentalness, liveness, valence, and tempo</i>). We get the minimum Euclidean distance from each song in the list
             to each of the parent's songs, and rank the songs by shortest distance to recommend songs that are the most
@@ -93,7 +93,7 @@
         <hr>
 
         <h1 class="w-75" style="text-align: center;">User-Parent Playlist</h1>
-        <img src="{{ url_for('static', filename='flow3.png') }}" width="800", height="450">
+        <img src="{{ url_for('static', filename='flow3.png') }}" width="500", height="450">
 
         <p class="w-75">
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We implement <a href="https://github.com/benfred/implicit">Implicit</a>[2] using <a href="https://medium.com/radon-dev/als-implicit-collaborative-filtering-5ed653ba39fe">alternating least squares</a>
